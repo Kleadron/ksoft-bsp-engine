@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C# Express 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BspShooter", "BspShooter\BspShooter.csproj", "{FF47E23E-E031-45B9-98C8-4296121A8D27}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KleadronCommon", "KleadronCommon\KleadronCommon.csproj", "{CA8F7E32-5CB7-44AA-BF6E-67B11FBD054E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FF47E23E-E031-45B9-98C8-4296121A8D27}.Debug|x86.ActiveCfg = Debug|x86
+		{FF47E23E-E031-45B9-98C8-4296121A8D27}.Debug|x86.Build.0 = Debug|x86
+		{FF47E23E-E031-45B9-98C8-4296121A8D27}.Release|x86.ActiveCfg = Release|x86
+		{FF47E23E-E031-45B9-98C8-4296121A8D27}.Release|x86.Build.0 = Release|x86
+		{38CF700E-7FA3-4AE3-BB0D-B7D78B53E2D9}.Debug|x86.ActiveCfg = Debug|x86
+		{38CF700E-7FA3-4AE3-BB0D-B7D78B53E2D9}.Release|x86.ActiveCfg = Release|x86
+		{CA8F7E32-5CB7-44AA-BF6E-67B11FBD054E}.Debug|x86.ActiveCfg = Debug|x86
+		{CA8F7E32-5CB7-44AA-BF6E-67B11FBD054E}.Debug|x86.Build.0 = Debug|x86
+		{CA8F7E32-5CB7-44AA-BF6E-67B11FBD054E}.Release|x86.ActiveCfg = Release|x86
+		{CA8F7E32-5CB7-44AA-BF6E-67B11FBD054E}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
