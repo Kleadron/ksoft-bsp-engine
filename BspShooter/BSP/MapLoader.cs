@@ -39,13 +39,14 @@ namespace KSoft.Game.BSP
             List<DiskEntity> entities = new List<DiskEntity>();
 
             DiskEntity curEntity = null;
+            Solid curSolid = null;
 
             Stream s = File.OpenRead(mapfile);
             StreamReader sr = new StreamReader(s);
 
             ReadState state = ReadState.Nothing;
 
-            List<Surface> surfaces = new List<Surface>();
+            //List<Surface> surfaces = new List<Surface>();
 
             int linenum = 0;
             int lineIndex = -1;
@@ -92,6 +93,7 @@ namespace KSoft.Game.BSP
                             {
                                 // start reading the solid
                                 newstate = ReadState.Solid;
+                                curSolid = new Solid();
                             }
                             else if (line == "}")
                             {
@@ -126,15 +128,15 @@ namespace KSoft.Game.BSP
                             {
                                 // stop reading the solid
                                 newstate = ReadState.Entity;
-                                Solid solid = new Solid(surfaces.ToArray());
-                                curEntity.solids.Add(solid);
-                                surfaces.Clear();
+                                curSolid.BuildPolygons();
+                                curEntity.solids.Add(curSolid);
+                                curSolid = null;
                             }
                             else
                             {
                                 // read surface
                                 Surface surf = new Surface(line);
-                                surfaces.Add(surf);
+                                curSolid.surfaces.Add(surf);
                             }
                         }
                         break;

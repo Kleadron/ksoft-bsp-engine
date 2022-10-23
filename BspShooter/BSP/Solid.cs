@@ -9,8 +9,8 @@ namespace KSoft.Game.BSP
     // A solid represents a convex hull defined by plane surfaces.
     public class Solid
     {
-        public List<Surface> surfaces;
-        public List<Polygon> polygons;
+        public List<Surface> surfaces; // Raw surface information used to generate the polygons.
+        public List<Polygon> polygons; // 3D polygons.
         
         public Solid()
         {
@@ -18,14 +18,21 @@ namespace KSoft.Game.BSP
             polygons = new List<Polygon>();
         }
 
+        public Solid(List<Surface> sides)
+        {
+            surfaces = sides;
+            polygons = new List<Polygon>();
+            BuildPolygons();
+        }
+
         public Solid(params Surface[] sides)
         {
             this.surfaces = sides.ToList();
             polygons = new List<Polygon>();
-            CreatePolygons();
+            BuildPolygons();
         }
 
-        public void CreatePolygons()
+        public void BuildPolygons()
         {
             // invalid shape
             if (surfaces.Count < 4)

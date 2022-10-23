@@ -6,6 +6,8 @@ using System.Text;
 
 namespace KSoft.Game.BSP
 {
+    // Contains the plane and properties of a surface.
+    // Idea: separate properties into SurfaceInfo? this way polygons can create new Surfaces and not duplicate SurfaceInfo
     public class Surface
     {
         //public List<Vector3> vertices = new List<Vector3>();

@@ -12,6 +12,7 @@ using KleadronCommon.Data;
 using KSoft.Game.BSP;
 using KleadronCommon;
 using System.IO;
+using QoiSharp;
 
 namespace KSoft.Game
 {
@@ -51,6 +52,18 @@ namespace KSoft.Game
         InputSystem input;
 
         int axisSize = 64;
+        bool screenshotQueued = false;
+
+        protected override void OnExiting(object sender, EventArgs args)
+        {
+            screenshotQueued = true;
+            if (BeginDraw())
+            {
+                Draw(new GameTime());
+                EndDraw();
+            }
+            base.OnExiting(sender, args);
+        }
 
         public Game1()
         {
@@ -124,7 +137,7 @@ namespace KSoft.Game
 
             //List<Solid> solids = MapLoader.GetSolids("Content/industrial.map");
 
-            string mapname = "e3m5.map";
+            string mapname = "qmaps/dm3.map";
 
             if (!File.Exists(mapname))
             {
@@ -162,8 +175,8 @@ namespace KSoft.Game
             renderverts = vlist.ToArray();
             renderindices = ilist.ToArray();
 
-            Vector3 min = Vector3.One * 2048;
-            Vector3 max = Vector3.One * -2048;
+            Vector3 min = Vector3.One * 4096;
+            Vector3 max = Vector3.One * -4096;
 
             for(int i = 0; i < renderverts.Length; i++)
             {
@@ -390,6 +403,8 @@ namespace KSoft.Game
             move = move.SafeNormalise();
             cameraOrigin += move * 256f * delta;
 
+            if (input.KeyPressed(Keys.F12))
+                screenshotQueued = true;
 
             base.Update(gameTime);
         }
@@ -409,7 +424,7 @@ namespace KSoft.Game
 
             world = Matrix.Identity;
             view = Matrix.CreateLookAt(cameraOrigin, cameraOrigin + cameraForward, cameraUp);
-            proj = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(60), (float)GraphicsDevice.Viewport.Width / (float)GraphicsDevice.Viewport.Height, 1f, 5000f);
+            proj = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(60), (float)GraphicsDevice.Viewport.Width / (float)GraphicsDevice.Viewport.Height, 1f, 8192);
             //world = Matrix.CreateRotationZ((float)gameTime.TotalGameTime.TotalSeconds * 0.25f);
 
 
@@ -483,6 +498,55 @@ namespace KSoft.Game
 
             DrawMap(gameTime);
             DrawAxisGizmo(gameTime);
+
+            // screenshot code
+            if (screenshotQueued)
+            {
+                int width = GraphicsDevice.Viewport.Width;
+                int height = GraphicsDevice.Viewport.Height;
+
+                // get RGBA backbuffer
+                byte[] bbdata = new byte[width * height * 4];
+                GraphicsDevice.GetBackBufferData(bbdata);
+
+                // convert to RGB
+                byte[] noalpha = new byte[width * height * 3];
+                for(int i = 0; i < width * height; i++)
+                {
+                    int bbdataI = i * 4;
+                    int noalphaI = i * 3;
+
+                    noalpha[noalphaI] = bbdata[bbdataI];        // RED
+                    noalpha[noalphaI+1] = bbdata[bbdataI+1];    // GREEN
+                    noalpha[noalphaI+2] = bbdata[bbdataI+2];    // BLUE
+                }
+
+                QoiImage img = new QoiImage(noalpha, width, height, QoiSharp.Codec.Channels.Rgb);
+                byte[] encoded = QoiEncoder.Encode(img);
+
+                string dir = "screenshots";
+
+                if (!Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+
+                int id = 0;
+                while(true)
+                {
+                    string filename = dir + "/" + id + ".qoi";
+                    if (!File.Exists(filename))
+                    {
+                        File.WriteAllBytes(filename, encoded);
+                        Console.WriteLine("Created " + filename);
+                        break;
+                    }
+                    else
+                    {
+                        id++;
+                    }
+                }
+
+                screenshotQueued = false;
+            }
 
             base.Draw(gameTime);
         }
