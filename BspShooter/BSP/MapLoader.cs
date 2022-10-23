@@ -133,14 +133,8 @@ namespace KSoft.Game.BSP
                             else
                             {
                                 // read surface
-
-                                // ( -16 -16 -64 ) ( -16 -15 -64 ) ( -16 -16 -63 )
-                                string[] parts = line.Split(' ');
-                                Vector3 p1 = new Vector3(float.Parse(parts[1]), float.Parse(parts[2]), float.Parse(parts[3]));
-                                Vector3 p2 = new Vector3(float.Parse(parts[6]), float.Parse(parts[7]), float.Parse(parts[8]));
-                                Vector3 p3 = new Vector3(float.Parse(parts[11]), float.Parse(parts[12]), float.Parse(parts[13]));
-
-                                surfaces.Add(new Surface(p1, p2, p3));
+                                Surface surf = new Surface(line);
+                                surfaces.Add(surf);
                             }
                         }
                         break;
@@ -148,6 +142,9 @@ namespace KSoft.Game.BSP
 
                 state = newstate;
             }
+
+            sr.Close();
+            s.Close();
 
             return entities;
         }

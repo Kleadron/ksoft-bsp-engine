@@ -51,6 +51,36 @@ namespace KSoft.Game
             return Math.Abs(len) < Epsilon ? new Vector3(0, 0, 0) : new Vector3(v.X / len, v.Y / len, v.Z / len);
         }
 
+        public static bool EquivalentTo(this Vector3 v, Vector3 test, double delta = 0.0001d)
+        {
+            var xd = Math.Abs(v.X - test.X);
+            var yd = Math.Abs(v.Y - test.Y);
+            var zd = Math.Abs(v.Z - test.Z);
+            return (xd < delta) && (yd < delta) && (zd < delta);
+        }
+
+        ///  <summary>Finds if the given point is above, below, or on the plane.</summary>
+        ///  <param name="co">The Vector3 to test</param>
+        /// <param name="epsilon">Tolerance value</param>
+        /// <returns>
+        ///  value == -1 if Vector3 is below the plane<br />
+        ///  value == 1 if Vector3 is above the plane<br />
+        ///  value == 0 if Vector3 is on the plane.
+        /// </returns>
+        public static int OnPlane(this Plane p, Vector3 co, double epsilon = 0.0001d)
+        {
+            //eval (s = Ax + By + Cz + D) at point (x,y,z)
+            //if s > 0 then point is "above" the plane (same side as normal)
+            //if s < 0 then it lies on the opposite side
+            //if s = 0 then the point (x,y,z) lies on the plane
+            var res = p.DotCoordinate(co);
+            if (Math.Abs(res) < epsilon)
+                return 0;
+            if (res < 0)
+                return -1;
+            return 1;
+        }
+
         public static float DeltaTime(this GameTime gameTime)
         {
             return (float)gameTime.ElapsedGameTime.TotalSeconds;

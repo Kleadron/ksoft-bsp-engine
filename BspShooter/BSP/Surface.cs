@@ -14,6 +14,28 @@ namespace KSoft.Game.BSP
         public Vector3 Origin => vertices.Aggregate(Vector3.Zero, (x, y) => x + y) / vertices.Count;
 
         public bool nodraw = false;
+        public bool clip = false;
+
+        public Surface(string line)
+        {
+            string[] parts = line.Split(' ');
+
+            // ( -16 -16 -64 ) ( -16 -15 -64 ) ( -16 -16 -63 )
+            Vector3 p1 = new Vector3(float.Parse(parts[1]), float.Parse(parts[2]), float.Parse(parts[3]));
+            Vector3 p2 = new Vector3(float.Parse(parts[6]), float.Parse(parts[7]), float.Parse(parts[8]));
+            Vector3 p3 = new Vector3(float.Parse(parts[11]), float.Parse(parts[12]), float.Parse(parts[13]));
+
+            vertices.Add(p1);
+            vertices.Add(p2);
+            vertices.Add(p3);
+
+            // __TB_empty 0 0 0 1 1
+            string texture = parts[15].ToUpper();
+            if (texture == "CLIP" || texture == "NULL" || texture == "TRIGGER" || texture == "SKIP")
+                nodraw = true;
+            if (texture.StartsWith("*"))
+                nodraw = true;
+        }
 
         public Surface(Vector3 p1, Vector3 p2, Vector3 p3)
         {

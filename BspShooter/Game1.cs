@@ -48,6 +48,8 @@ namespace KSoft.Game
 
         InputSystem input;
 
+        int axisSize = 64;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -59,27 +61,27 @@ namespace KSoft.Game
             Console.WriteLine("Engine Created");
             IsMouseVisible = true;
 
-            float axisSize = 256;
+            float lineSize = axisSize / 2;
 
             axisverts = new VertexPositionColor[]
             {
                 new VertexPositionColor(new Vector3(0, 0, 0), Color.Red),
-                new VertexPositionColor(new Vector3(axisSize, 0, 0), Color.Red),
+                new VertexPositionColor(new Vector3(lineSize, 0, 0), Color.Red),
 
                 new VertexPositionColor(new Vector3(0, 0, 0), Color.Lime),
-                new VertexPositionColor(new Vector3(0, axisSize, 0), Color.Lime),
+                new VertexPositionColor(new Vector3(0, lineSize, 0), Color.Lime),
 
                 new VertexPositionColor(new Vector3(0, 0, 0), Color.Blue),
-                new VertexPositionColor(new Vector3(0, 0, axisSize), Color.Blue),
+                new VertexPositionColor(new Vector3(0, 0, lineSize), Color.Blue),
 
-                new VertexPositionColor(new Vector3(0, 0, 0), Color.DarkRed),
-                new VertexPositionColor(new Vector3(-axisSize, 0, 0), Color.DarkRed),
+                //new VertexPositionColor(new Vector3(0, 0, 0), Color.DarkRed),
+                //new VertexPositionColor(new Vector3(-lineSize, 0, 0), Color.DarkRed),
 
-                new VertexPositionColor(new Vector3(0, 0, 0), Color.Green),
-                new VertexPositionColor(new Vector3(0, -axisSize, 0), Color.Green),
+                //new VertexPositionColor(new Vector3(0, 0, 0), Color.Green),
+                //new VertexPositionColor(new Vector3(0, -lineSize, 0), Color.Green),
 
-                new VertexPositionColor(new Vector3(0, 0, 0), Color.DarkBlue),
-                new VertexPositionColor(new Vector3(0, 0, -axisSize), Color.DarkBlue),
+                //new VertexPositionColor(new Vector3(0, 0, 0), Color.DarkBlue),
+                //new VertexPositionColor(new Vector3(0, 0, -lineSize), Color.DarkBlue),
             };
 
             /*
@@ -118,7 +120,7 @@ namespace KSoft.Game
 
             //List<Solid> solids = MapLoader.GetSolids("Content/industrial.map");
 
-            string mapname = "industrial.map";
+            string mapname = "e3m5.map";
 
             if (!File.Exists(mapname))
             {
@@ -134,31 +136,52 @@ namespace KSoft.Game
                 Console.WriteLine("\t" + ent.Classname);
             }
 
-            List<Solid> solids = mapEntities[0].solids;
+            //List<Solid> solids = mapEntities[0].solids;
 
             //int numrenderverts = blocksolid.polygons.Count * 3;
             List<VertexPositionColor> vlist = new List<VertexPositionColor>();
             //renderverts = new VertexPositionColor[numrenderverts];
 
-            foreach (Solid solid in solids)
-            {
-                foreach (Polygon poly in solid.polygons)
-                {
-                    Color c = RandomColor();
-                    for (int j = 2; j < poly.vertices.Count; j++)
-                    {
-                        vlist.Add(new VertexPositionColor(poly.vertices[0], c));
-                        vlist.Add(new VertexPositionColor(poly.vertices[j - 1], c));
-                        vlist.Add(new VertexPositionColor(poly.vertices[j], c));
+            bool worldspawnOnly = false;
 
-                        // fade color to reveal triangles and winding order
-                        c *= 0.9f;
-                        c.A = 255;
-                    }
-                }
+            if (worldspawnOnly)
+            {
+                BuildEntitySolids(vlist, mapEntities[0]);
+            }
+            else
+            {
+                foreach(DiskEntity entity in mapEntities)
+                    BuildEntitySolids(vlist, entity);
             }
 
             renderverts = vlist.ToArray();
+
+            Vector3 min = Vector3.One * 2048;
+            Vector3 max = Vector3.One * -2048;
+
+            for(int i = 0; i < renderverts.Length; i++)
+            {
+                Vector3 check = renderverts[i].Position;
+
+                if (min.X > check.X)
+                    min.X = check.X;
+                if (min.Y > check.Y)
+                    min.Y = check.Y;
+                if (min.Z > check.Z)
+                    min.Z = check.Z;
+
+                if (max.X < check.X)
+                    max.X = check.X;
+                if (max.Y < check.Y)
+                    max.Y = check.Y;
+                if (max.Z < check.Z)
+                    max.Z = check.Z;
+            }
+
+            Vector3 size = max - min;
+
+            Console.WriteLine("Map Dimensions: " + min + " " + max);
+            Console.WriteLine("Size: " + size);
 
             //bool convex = Polygon.IsConvexSet(blocksolid);
 
@@ -167,6 +190,37 @@ namespace KSoft.Game
             //BSPTreePolygon poly = new BSPTreePolygon(Vector3.Zero+a, Vector3.UnitY+a, Vector3.UnitX+a);
 
             //BSPPolygonSide side = poly.ClassifyPoint(new Vector3(0, 0, -1));
+        }
+
+        void BuildEntitySolids(List<VertexPositionColor> verts, DiskEntity entity)
+        {
+            bool randomColorPerSurface = false;
+
+            Color c1 = Color.White;
+
+            foreach (Solid solid in entity.solids)
+            {
+                if (!randomColorPerSurface)
+                    c1 = RandomColor();
+
+                foreach (Polygon poly in solid.polygons)
+                {
+                    if (randomColorPerSurface)
+                        c1 = RandomColor();
+
+                    Color c = c1;
+                    for (int j = 2; j < poly.vertices.Count; j++)
+                    {
+                        verts.Add(new VertexPositionColor(poly.vertices[0], c));
+                        verts.Add(new VertexPositionColor(poly.vertices[j - 1], c));
+                        verts.Add(new VertexPositionColor(poly.vertices[j], c));
+
+                        // fade color to reveal triangles and winding order
+                        c *= 0.9f;
+                        c.A = 255;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -233,6 +287,9 @@ namespace KSoft.Game
 
             input.Update(delta, total);
 
+            if (input.KeyHeld(Keys.LeftShift))
+                delta *= 4;
+
             if (input.KeyHeld(Keys.Left))
                 cameraYaw += 90f * delta;
             if (input.KeyHeld(Keys.Right))
@@ -287,14 +344,8 @@ namespace KSoft.Game
             base.Update(gameTime);
         }
 
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        protected override void Draw(GameTime gameTime)
+        void DrawMap(GameTime gameTime)
         {
-            GraphicsDevice.Clear(new Color(64, 64, 64));
-
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
 
@@ -308,7 +359,7 @@ namespace KSoft.Game
 
             world = Matrix.Identity;
             view = Matrix.CreateLookAt(cameraOrigin, cameraOrigin + cameraForward, cameraUp);
-            proj = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(60), (float)GraphicsDevice.Viewport.Width / (float)GraphicsDevice.Viewport.Height, 1f, 3000f);
+            proj = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(60), (float)GraphicsDevice.Viewport.Width / (float)GraphicsDevice.Viewport.Height, 1f, 5000f);
             //world = Matrix.CreateRotationZ((float)gameTime.TotalGameTime.TotalSeconds * 0.25f);
 
 
@@ -317,9 +368,63 @@ namespace KSoft.Game
             effect.World = world;
 
             effect.CurrentTechnique.Passes[0].Apply();
-            GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, axisverts, 0, axisverts.Length / 2);
-            effect.CurrentTechnique.Passes[0].Apply();
             GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length / 3);
+            effect.CurrentTechnique.Passes[0].Apply();
+            GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, axisverts, 0, axisverts.Length / 2);
+        }
+
+        void DrawAxisGizmo(GameTime gameTime)
+        {
+            GraphicsDevice.DepthStencilState = DepthStencilState.None;
+            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+
+            Viewport oldViewport = GraphicsDevice.Viewport;
+            Viewport newViewport = oldViewport;
+
+            newViewport.X = oldViewport.Width - axisSize - 10;
+            newViewport.Y = 10;
+            newViewport.Width = axisSize;
+            newViewport.Height = axisSize;
+
+            GraphicsDevice.Viewport = newViewport;
+
+            Vector3 cameraForward = Vector3.UnitX;
+            Vector3 cameraUp = Vector3.UnitZ;
+
+            Matrix camTrans = Matrix.CreateRotationY(MathHelper.ToRadians(cameraPitch)) * Matrix.CreateRotationZ(MathHelper.ToRadians(cameraYaw));
+
+            cameraForward = Vector3.TransformNormal(cameraForward, camTrans);
+            cameraUp = Vector3.TransformNormal(cameraUp, camTrans);
+
+            int viewSize = axisSize / 2;
+
+            world = Matrix.Identity;
+            view = Matrix.CreateLookAt(cameraForward * viewSize, Vector3.Zero, cameraUp);
+            //proj = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(60), (float)GraphicsDevice.Viewport.Width / (float)GraphicsDevice.Viewport.Height, 1f, 5000f);
+            
+            proj = Matrix.CreateOrthographicOffCenter(viewSize, -viewSize, -viewSize, viewSize, -axisSize, axisSize);
+            //world = Matrix.CreateRotationZ((float)gameTime.TotalGameTime.TotalSeconds * 0.25f);
+
+            effect.View = view;
+            effect.Projection = proj;
+            effect.World = world;
+
+            effect.CurrentTechnique.Passes[0].Apply();
+            GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, axisverts, 0, axisverts.Length / 2);
+
+            GraphicsDevice.Viewport = oldViewport;
+        }
+
+        /// <summary>
+        /// This is called when the game should draw itself.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        protected override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(new Color(64, 64, 64));
+
+            DrawMap(gameTime);
+            DrawAxisGizmo(gameTime);
 
             base.Draw(gameTime);
         }

@@ -26,12 +26,17 @@ namespace KSoft.Game.BSP
 
         void CreatePolygons()
         {
+            // invalid shape
+            if (surfaces.Count < 4)
+                return;
+
             foreach(Surface surface in surfaces)
             {
                 if (surface.nodraw)
                     continue;
 
-                Polygon polygon = new Polygon(surface.Plane, 2048);
+                // the plane size argument may need to be configurable or adaptable to map or largest brush size
+                Polygon polygon = new Polygon(surface.Plane, 4096);
 
                 Vector3 planeOrigin = surface.Origin;
                 Vector3 polyOrigin = polygon.Origin;
@@ -53,6 +58,18 @@ namespace KSoft.Game.BSP
                 }
 
                 polygons.Add(polygon);
+            }
+
+            // Ensure all the faces point outwards
+            var origin = polygons.Aggregate(Vector3.Zero, (x, y) => x + y.Origin) / polygons.Count;
+            for (var i = 0; i < polygons.Count; i++)
+            {
+                var face = polygons[i];
+                if (face.Plane.OnPlane(origin) >= 0)
+                {
+                    //polygons[i] = new Polygon(face.vertices.Reverse());
+                    polygons[i].vertices.Reverse();
+                }
             }
         }
     }
