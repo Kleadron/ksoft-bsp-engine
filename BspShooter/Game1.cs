@@ -53,6 +53,7 @@ namespace KSoft.Game
 
         int axisSize = 64;
         bool screenshotQueued = false;
+        bool drawWireframe = true;
 
         protected override void OnExiting(object sender, EventArgs args)
         {
@@ -137,7 +138,9 @@ namespace KSoft.Game
 
             //List<Solid> solids = MapLoader.GetSolids("Content/industrial.map");
 
-            string mapname = "qmaps/dm3.map";
+            // favorite maps: dm3 and e3m5
+
+            string mapname = "qmaps/e3m5.map";
 
             if (!File.Exists(mapname))
             {
@@ -412,6 +415,9 @@ namespace KSoft.Game
             if (input.KeyPressed(Keys.F12))
                 screenshotQueued = true;
 
+            if (input.KeyPressed(Keys.F2))
+                drawWireframe = !drawWireframe;
+
             base.Update(gameTime);
         }
 
@@ -442,10 +448,13 @@ namespace KSoft.Game
             effect.CurrentTechnique.Passes[0].Apply();
             GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length, renderindices, 0, renderindices.Length / 3);
 
-            effect.VertexColorEnabled = false;
-            GraphicsDevice.RasterizerState = wireframeState;
-            effect.CurrentTechnique.Passes[0].Apply();
-            GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length, renderindices, 0, renderindices.Length / 3);
+            if (drawWireframe)
+            {
+                effect.VertexColorEnabled = false;
+                GraphicsDevice.RasterizerState = wireframeState;
+                effect.CurrentTechnique.Passes[0].Apply();
+                GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length, renderindices, 0, renderindices.Length / 3);
+            }
 
             effect.VertexColorEnabled = true;
             effect.CurrentTechnique.Passes[0].Apply();
