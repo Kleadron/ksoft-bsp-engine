@@ -111,6 +111,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BSP\DiskEntity.cs" />
+    <Compile Include="BSP\MapData.cs" />
     <Compile Include="BSP\MapLoader.cs" />
     <Compile Include="BSP\PlaneClassification.cs" />
     <Compile Include="BSP\Solid.cs" />

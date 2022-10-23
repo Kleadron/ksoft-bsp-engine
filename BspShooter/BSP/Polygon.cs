@@ -12,18 +12,26 @@ namespace KSoft.Game.BSP
         //public Plane plane;
         //public Vector3 origin;
 
-        public Plane Plane => new Plane(vertices[0], vertices[2], vertices[1]); // XNA is opposite handed, so the default plane class needs the winding swapped.
-        public Vector3 Origin => vertices.Aggregate(Vector3.Zero, (x, y) => x + y) / vertices.Count;
+        // surface information, might be a bad idea to tie this to the polygon? /shrug
+        public Surface surface;
 
-        public Polygon(Plane plane, float radius = 1000000)
+        // considering pre-calculating these
+        //public Plane Plane => new Plane(vertices[0], vertices[2], vertices[1]); // XNA is opposite handed, so the default plane class needs the winding swapped.
+        //public Vector3 Origin => vertices.Aggregate(Vector3.Zero, (x, y) => x + y) / vertices.Count;
+
+        public Vector3 origin;
+
+        public Polygon(Surface surface, float radius = 1000000)
         {
-            // Get aligned up and right axes to the plane
-            Vector3 direction = plane.GetClosestAxisToNormal();
-            Vector3 tempV = direction == Vector3.UnitZ ? -Vector3.UnitY : -Vector3.UnitZ;
-            Vector3 up = tempV.SledgeCross(plane.Normal).SafeNormalise();
-            Vector3 right = plane.Normal.SledgeCross(up).SafeNormalise();
+            this.surface = surface;
 
-            Vector3 planePoint = plane.GetPointOnPlane();
+            // Get aligned up and right axes to the plane
+            Vector3 direction = surface.plane.GetClosestAxisToNormal();
+            Vector3 tempV = direction == Vector3.UnitZ ? -Vector3.UnitY : -Vector3.UnitZ;
+            Vector3 up = tempV.SledgeCross(surface.plane.Normal).SafeNormalise();
+            Vector3 right = surface.plane.Normal.SledgeCross(up).SafeNormalise();
+
+            Vector3 planePoint = surface.plane.GetPointOnPlane();
 
             List<Vector3> verts = new List<Vector3>()
             {
@@ -35,18 +43,13 @@ namespace KSoft.Game.BSP
 
             var origin = verts.Aggregate(Vector3.Zero, (x, y) => x + y) / verts.Count;
             vertices = verts.Select(x => (x - origin).SafeNormalise() * radius + origin).ToList();
+
+            CalcOrigin();
         }
 
-        public void Shift(Vector3 offset)
+        public Polygon(Surface surface, params Vector3[] verts)
         {
-            for(int i = 0; i < vertices.Count; i++)
-            {
-                vertices[i] = vertices[i] + offset;
-            }
-        }
-
-        public Polygon(params Vector3[] verts)
-        {
+            this.surface = surface;
             vertices = verts.ToList();
 
             if (vertices.Count <= 2)
@@ -56,11 +59,12 @@ namespace KSoft.Game.BSP
 
             //plane = new Plane(vertices[0], vertices[1], vertices[2]);
 
-            //CalcOrigin();
+            CalcOrigin();
         }
 
-        public Polygon(IEnumerable<Vector3> verts)
+        public Polygon(Surface surface, IEnumerable<Vector3> verts)
         {
+            this.surface = surface;
             //this.p1 = p1;
             //this.p2 = p2;
             //this.p3 = p3;
@@ -74,7 +78,7 @@ namespace KSoft.Game.BSP
 
             //plane = new Plane(vertices[0], vertices[1], vertices[2]);
 
-            //CalcOrigin();
+            CalcOrigin();
         }
 
         public Polygon(params float[] coords)
@@ -97,17 +101,25 @@ namespace KSoft.Game.BSP
 
             //plane = new Plane(vertices[0], vertices[1], vertices[2]);
 
-            //CalcOrigin();
+            CalcOrigin();
         }
 
-        //void CalcOrigin()
-        //{
-        //    int numverts = vertices.Count;
-        //    origin = Vector3.Zero;
-        //    for (int i = 0; i < numverts; i++)
-        //        origin += vertices[i];
-        //    origin /= numverts;
-        //}
+        public void Shift(Vector3 offset)
+        {
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                vertices[i] = vertices[i] + offset;
+            }
+        }
+
+        public void CalcOrigin()
+        {
+            int numverts = vertices.Count;
+            origin = Vector3.Zero;
+            for (int i = 0; i < numverts; i++)
+                origin += vertices[i];
+            origin /= numverts;
+        }
 
         //public PolySide ClassifyPoint(Vector3 point)
         //{
@@ -251,7 +263,7 @@ namespace KSoft.Game.BSP
             {
                 // Co-planar
                 back = front = coplanarBack = coplanarFront = null;
-                if (Vector3.Dot(Plane.Normal, clip.Normal) > 0)
+                if (Vector3.Dot(surface.plane.Normal, clip.Normal) > 0)
                     coplanarFront = this;
                 else
                     coplanarBack = this;
@@ -298,8 +310,8 @@ namespace KSoft.Game.BSP
                 }
             }
 
-            back = new Polygon(backVerts.Select(x => new Vector3(x.X, x.Y, x.Z)));
-            front = new Polygon(frontVerts.Select(x => new Vector3(x.X, x.Y, x.Z)));
+            back = new Polygon(surface, backVerts.Select(x => new Vector3(x.X, x.Y, x.Z)));
+            front = new Polygon(surface, frontVerts.Select(x => new Vector3(x.X, x.Y, x.Z)));
             coplanarBack = coplanarFront = null;
 
             return true;

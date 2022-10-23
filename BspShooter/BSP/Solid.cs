@@ -39,10 +39,10 @@ namespace KSoft.Game.BSP
                     continue;
 
                 // the plane size argument may need to be configurable or adaptable to map or largest brush size
-                Polygon polygon = new Polygon(surface.Plane, 4096);
+                Polygon polygon = new Polygon(surface, 4096);
 
-                Vector3 planeOrigin = surface.Origin;
-                Vector3 polyOrigin = polygon.Origin;
+                Vector3 planeOrigin = surface.origin;
+                Vector3 polyOrigin = polygon.origin;
                 Vector3 diff = planeOrigin - polyOrigin;
 
                 polygon.Shift(diff);
@@ -53,7 +53,7 @@ namespace KSoft.Game.BSP
                         continue;
 
                     Polygon back, front;
-                    bool intersected = polygon.Split(intersector.Plane, out back, out front);
+                    bool intersected = polygon.Split(intersector.plane, out back, out front);
                     if (intersected && back != null)
                     {
                         polygon = back;
@@ -64,11 +64,11 @@ namespace KSoft.Game.BSP
             }
 
             // Ensure all the faces point outwards
-            var origin = polygons.Aggregate(Vector3.Zero, (x, y) => x + y.Origin) / polygons.Count;
+            var origin = polygons.Aggregate(Vector3.Zero, (x, y) => x + y.origin) / polygons.Count;
             for (var i = 0; i < polygons.Count; i++)
             {
                 var face = polygons[i];
-                if (face.Plane.OnPlane(origin) >= 0)
+                if (face.surface.plane.OnPlane(origin) >= 0)
                 {
                     //polygons[i] = new Polygon(face.vertices.Reverse());
                     polygons[i].vertices.Reverse();

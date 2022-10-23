@@ -124,7 +124,7 @@ namespace KSoft.Game
 
             //List<Solid> solids = MapLoader.GetSolids("Content/industrial.map");
 
-            string mapname = "industrial.map";
+            string mapname = "e3m5.map";
 
             if (!File.Exists(mapname))
             {
@@ -137,7 +137,7 @@ namespace KSoft.Game
 
             foreach(DiskEntity ent in mapEntities)
             {
-                Console.WriteLine("\t" + ent.Classname);
+                Console.WriteLine("\t" + ent.ClassName);
             }
 
             //List<Solid> solids = mapEntities[0].solids;
@@ -204,12 +204,12 @@ namespace KSoft.Game
                 return;
 
             int numSolids = entity.solids.Count;
-            int solidPrintInterval = 20;
+            int solidPrintInterval = 100;
             int solidsProcessed = 0;
 
             bool randomColorPerSurface = false;
 
-            Console.WriteLine("Building " + numSolids + " solids");
+            Console.WriteLine("Building " + numSolids + " solids...");
 
             // dedupe
             void AddVert(Vector3 pos, Color c)

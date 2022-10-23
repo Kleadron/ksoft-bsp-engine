@@ -6,12 +6,13 @@ using Microsoft.Xna.Framework;
 
 namespace KSoft.Game.BSP
 {
+    // Represents an entity's keyvalues and solids
     public class DiskEntity
     {
         public Dictionary<string, string> keyvalues = new Dictionary<string, string>();
         public List<Solid> solids = new List<Solid>();
 
-        public string Classname
+        public string ClassName
         {
             get
             {
