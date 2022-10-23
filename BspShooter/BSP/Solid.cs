@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 
 namespace KSoft.Game.BSP
 {
+    // A solid represents a convex hull defined by plane surfaces.
     public class Solid
     {
         public List<Surface> surfaces;
@@ -24,11 +25,13 @@ namespace KSoft.Game.BSP
             CreatePolygons();
         }
 
-        void CreatePolygons()
+        public void CreatePolygons()
         {
             // invalid shape
             if (surfaces.Count < 4)
                 return;
+
+            polygons.Clear();
 
             foreach(Surface surface in surfaces)
             {

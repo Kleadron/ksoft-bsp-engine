@@ -51,7 +51,7 @@ namespace KSoft.Game
             return Math.Abs(len) < Epsilon ? new Vector3(0, 0, 0) : new Vector3(v.X / len, v.Y / len, v.Z / len);
         }
 
-        public static bool EquivalentTo(this Vector3 v, Vector3 test, double delta = 0.0001d)
+        public static bool EquivalentTo(this Vector3 v, Vector3 test, float delta = 0.001f)
         {
             var xd = Math.Abs(v.X - test.X);
             var yd = Math.Abs(v.Y - test.Y);

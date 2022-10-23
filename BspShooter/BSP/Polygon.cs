@@ -12,7 +12,7 @@ namespace KSoft.Game.BSP
         //public Plane plane;
         //public Vector3 origin;
 
-        public Plane Plane => new Plane(vertices[0], vertices[2], vertices[1]);
+        public Plane Plane => new Plane(vertices[0], vertices[2], vertices[1]); // XNA is opposite handed, so the default plane class needs the winding swapped.
         public Vector3 Origin => vertices.Aggregate(Vector3.Zero, (x, y) => x + y) / vertices.Count;
 
         public Polygon(Plane plane, float radius = 1000000)
@@ -109,72 +109,101 @@ namespace KSoft.Game.BSP
         //    origin /= numverts;
         //}
 
-        public PolySide ClassifyPoint(Vector3 point)
-        {
-            //float dot = Vector3.Dot(point, plane.Normal) - plane.D;
-            float dot = Plane.DotCoordinate(point);
-            if (dot == 0)
-                return PolySide.Coinciding;
-            else if (dot < 0)
-                return PolySide.Behind;
-            else
-                return PolySide.Infront;
-        }
+        //public PolySide ClassifyPoint(Vector3 point)
+        //{
+        //    //float dot = Vector3.Dot(point, plane.Normal) - plane.D;
+        //    float dot = Plane.DotCoordinate(point);
+        //    if (dot == 0)
+        //        return PolySide.Coinciding;
+        //    else if (dot < 0)
+        //        return PolySide.Behind;
+        //    else
+        //        return PolySide.Infront;
+        //}
 
-        public bool PolygonInfront(Polygon target)
+        //public bool PolygonInfront(Polygon target)
+        //{
+        //    for (int i = 0; i < target.vertices.Count; i++)
+        //    {
+        //        if (ClassifyPoint(target.vertices[i]) != PolySide.Infront)
+        //            return false;
+        //    }
+        //    return true;
+        //}
+
+        //public static bool IsConvexSet(Polygon[] polygons)
+        //{
+        //    for(int i = 0; i < polygons.Length; i++)
+        //    {
+        //        for (int j = 0; j < polygons.Length; j++)
+        //        {
+        //            if (i == j)
+        //                continue;
+
+        //            bool infront = polygons[i].PolygonInfront(polygons[j]);
+
+        //            Console.WriteLine("Compare " + i + " to " + j + ": " + infront);
+
+        //            // all polygons must face eachother
+        //            if (!infront)
+        //                return false;
+        //        }
+        //    }
+
+        //    return true;
+        //}
+
+        //public PolySide CalculateSide(Polygon target)
+        //{
+        //    int positives = 0, negatives = 0;
+
+        //    for (int i = 0; i < target.vertices.Count; i++)
+        //    {
+        //        PolySide side = ClassifyPoint(target.vertices[i]);
+
+        //        if (side == PolySide.Infront)
+        //            positives++;
+        //        else if (side == PolySide.Behind)
+        //            negatives++;
+        //    }
+
+        //    if (positives > 0 && negatives == 0)
+        //        return PolySide.Infront;
+        //    else if (positives == 0 && negatives > 0)
+        //        return PolySide.Behind;
+        //    else if (positives == 0 && negatives == 0)
+        //        return PolySide.Coinciding;
+        //    else
+        //        return PolySide.Spanning;
+        //}
+
+        public PlaneClassification ClassifyAgainstPlane(Plane p)
         {
-            for (int i = 0; i < target.vertices.Count; i++)
+            var count = vertices.Count;
+            var front = 0;
+            var back = 0;
+            var onplane = 0;
+
+            foreach (var t in vertices)
             {
-                if (ClassifyPoint(target.vertices[i]) != PolySide.Infront)
-                    return false;
-            }
-            return true;
-        }
+                var test = p.OnPlane(t);
 
-        public static bool IsConvexSet(Polygon[] polygons)
-        {
-            for(int i = 0; i < polygons.Length; i++)
-            {
-                for (int j = 0; j < polygons.Length; j++)
-                {
-                    if (i == j)
-                        continue;
-
-                    bool infront = polygons[i].PolygonInfront(polygons[j]);
-
-                    Console.WriteLine("Compare " + i + " to " + j + ": " + infront);
-
-                    // all polygons must face eachother
-                    if (!infront)
-                        return false;
-                }
+                // Vertices on the plane are both in front and behind the plane in this context
+                if (test <= 0)
+                    back++;
+                if (test >= 0)
+                    front++;
+                if (test == 0)
+                    onplane++;
             }
 
-            return true;
-        }
-
-        public PolySide CalculateSide(Polygon target)
-        {
-            int positives = 0, negatives = 0;
-
-            for (int i = 0; i < target.vertices.Count; i++)
-            {
-                PolySide side = ClassifyPoint(target.vertices[i]);
-
-                if (side == PolySide.Infront)
-                    positives++;
-                else if (side == PolySide.Behind)
-                    negatives++;
-            }
-
-            if (positives > 0 && negatives == 0)
-                return PolySide.Infront;
-            else if (positives == 0 && negatives > 0)
-                return PolySide.Behind;
-            else if (positives == 0 && negatives == 0)
-                return PolySide.Coinciding;
-            else
-                return PolySide.Spanning;
+            if (onplane == count)
+                return PlaneClassification.OnPlane;
+            if (front == count)
+                return PlaneClassification.Front;
+            if (back == count)
+                return PlaneClassification.Back;
+            return PlaneClassification.Spanning;
         }
 
         /// <summary>

@@ -24,6 +24,8 @@ namespace KSoft.Game
         SpriteBatch spriteBatch;
 
         VertexPositionColor[] renderverts;
+        int[] renderindices;
+
         VertexPositionColor[] axisverts;
         BasicEffect effect;
 
@@ -57,9 +59,11 @@ namespace KSoft.Game
 
             graphics.PreferredBackBufferWidth = 1280;
             graphics.PreferredBackBufferHeight = 720;
+            graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
 
             Console.WriteLine("Engine Created");
             IsMouseVisible = true;
+            Window.AllowUserResizing = true;
 
             float lineSize = axisSize / 2;
 
@@ -120,7 +124,7 @@ namespace KSoft.Game
 
             //List<Solid> solids = MapLoader.GetSolids("Content/industrial.map");
 
-            string mapname = "e3m5.map";
+            string mapname = "industrial.map";
 
             if (!File.Exists(mapname))
             {
@@ -140,21 +144,23 @@ namespace KSoft.Game
 
             //int numrenderverts = blocksolid.polygons.Count * 3;
             List<VertexPositionColor> vlist = new List<VertexPositionColor>();
+            List<int> ilist = new List<int>();
             //renderverts = new VertexPositionColor[numrenderverts];
 
             bool worldspawnOnly = false;
 
             if (worldspawnOnly)
             {
-                BuildEntitySolids(vlist, mapEntities[0]);
+                BuildEntitySolids(vlist, ilist, mapEntities[0]);
             }
             else
             {
                 foreach(DiskEntity entity in mapEntities)
-                    BuildEntitySolids(vlist, entity);
+                    BuildEntitySolids(vlist, ilist, entity);
             }
 
             renderverts = vlist.ToArray();
+            renderindices = ilist.ToArray();
 
             Vector3 min = Vector3.One * 2048;
             Vector3 max = Vector3.One * -2048;
@@ -192,9 +198,39 @@ namespace KSoft.Game
             //BSPPolygonSide side = poly.ClassifyPoint(new Vector3(0, 0, -1));
         }
 
-        void BuildEntitySolids(List<VertexPositionColor> verts, DiskEntity entity)
+        void BuildEntitySolids(List<VertexPositionColor> verts, List<int> indices, DiskEntity entity)
         {
+            if (entity.solids.Count == 0)
+                return;
+
+            int numSolids = entity.solids.Count;
+            int solidPrintInterval = 20;
+            int solidsProcessed = 0;
+
             bool randomColorPerSurface = false;
+
+            Console.WriteLine("Building " + numSolids + " solids");
+
+            // dedupe
+            void AddVert(Vector3 pos, Color c)
+            {
+                const bool dedupe = false;
+
+                if (dedupe)
+                {
+                    for (int i = 0; i < verts.Count; i++)
+                    {
+                        if (verts[i].Position.EquivalentTo(pos))
+                        {
+                            indices.Add(i);
+                            return;
+                        }
+                    }
+                }
+
+                verts.Add(new VertexPositionColor(pos, c));
+                indices.Add(verts.Count-1);
+            }
 
             Color c1 = Color.White;
 
@@ -211,16 +247,29 @@ namespace KSoft.Game
                     Color c = c1;
                     for (int j = 2; j < poly.vertices.Count; j++)
                     {
-                        verts.Add(new VertexPositionColor(poly.vertices[0], c));
-                        verts.Add(new VertexPositionColor(poly.vertices[j - 1], c));
-                        verts.Add(new VertexPositionColor(poly.vertices[j], c));
+                        //verts.Add(new VertexPositionColor(poly.vertices[0], c));
+                        //verts.Add(new VertexPositionColor(poly.vertices[j - 1], c));
+                        //verts.Add(new VertexPositionColor(poly.vertices[j], c));
+
+                        AddVert(poly.vertices[0], c);
+                        AddVert(poly.vertices[j - 1], c);
+                        AddVert(poly.vertices[j], c);
 
                         // fade color to reveal triangles and winding order
                         c *= 0.9f;
                         c.A = 255;
                     }
                 }
+
+                solidsProcessed++;
+
+                if (solidsProcessed % solidPrintInterval == 0)
+                {
+                    Console.WriteLine("Processed " + solidsProcessed + "/" + numSolids);
+                }
             }
+
+            Console.WriteLine("Built entity solids " + numSolids);
         }
 
         /// <summary>
@@ -258,6 +307,7 @@ namespace KSoft.Game
             wireframeState = new RasterizerState();
             wireframeState.CullMode = CullMode.CullCounterClockwiseFace;
             wireframeState.FillMode = FillMode.WireFrame;
+            //wireframeState.DepthBias = -0.0001f;
 
             //font = Content.Load<SpriteFont>("font");
         }
@@ -367,8 +417,16 @@ namespace KSoft.Game
             effect.Projection = proj;
             effect.World = world;
 
+            effect.VertexColorEnabled = true;
             effect.CurrentTechnique.Passes[0].Apply();
-            GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length / 3);
+            GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length, renderindices, 0, renderindices.Length / 3);
+
+            effect.VertexColorEnabled = false;
+            GraphicsDevice.RasterizerState = wireframeState;
+            effect.CurrentTechnique.Passes[0].Apply();
+            GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length, renderindices, 0, renderindices.Length / 3);
+
+            effect.VertexColorEnabled = true;
             effect.CurrentTechnique.Passes[0].Apply();
             GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, axisverts, 0, axisverts.Length / 2);
         }

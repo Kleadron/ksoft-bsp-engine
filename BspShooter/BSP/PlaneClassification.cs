@@ -5,11 +5,11 @@ using System.Text;
 
 namespace KSoft.Game.BSP
 {
-    public enum PolySide
+    public enum PlaneClassification
     {
-        Infront,
-        Behind,
-        Coinciding,
+        Front,
+        Back,
+        OnPlane,
         Spanning
     }
 }

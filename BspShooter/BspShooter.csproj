@@ -112,7 +112,7 @@
   <ItemGroup>
     <Compile Include="BSP\DiskEntity.cs" />
     <Compile Include="BSP\MapLoader.cs" />
-    <Compile Include="BSP\PolySide.cs" />
+    <Compile Include="BSP\PlaneClassification.cs" />
     <Compile Include="BSP\Solid.cs" />
     <Compile Include="BSP\Surface.cs" />
     <Compile Include="BSP\Tree.cs" />

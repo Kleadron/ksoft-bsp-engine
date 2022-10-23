@@ -10,7 +10,7 @@ namespace KSoft.Game.BSP
     {
         public List<Vector3> vertices = new List<Vector3>();
 
-        public Plane Plane => new Plane(vertices[0], vertices[2], vertices[1]);
+        public Plane Plane => new Plane(vertices[0], vertices[2], vertices[1]); // XNA is opposite handed, so the default plane class needs the winding swapped.
         public Vector3 Origin => vertices.Aggregate(Vector3.Zero, (x, y) => x + y) / vertices.Count;
 
         public bool nodraw = false;
