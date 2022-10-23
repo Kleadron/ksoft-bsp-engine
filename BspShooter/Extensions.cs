@@ -9,6 +9,7 @@ namespace KSoft.Game
     public static class Extensions
     {
         public const float Epsilon = 0.0001f;
+        public const float MapVertexRound = 0.125f;
 
         /// <summary>
         /// Gets the axis closest to the normal of this plane
@@ -79,6 +80,16 @@ namespace KSoft.Game
             if (res < 0)
                 return -1;
             return 1;
+        }
+
+        // needs to be a return function
+        public static Vector3 RoundToStep(this Vector3 v, float step)
+        {
+            v.X = (float)Math.Round(v.X / step) * step;
+            v.Y = (float)Math.Round(v.Y / step) * step;
+            v.Z = (float)Math.Round(v.Z / step) * step;
+
+            return v;
         }
 
         public static float DeltaTime(this GameTime gameTime)

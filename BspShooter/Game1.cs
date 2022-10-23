@@ -228,19 +228,25 @@ namespace KSoft.Game
             void AddVert(Vector3 pos, Color c)
             {
                 const bool dedupe = false;
+                const bool round = true;
 
+                // rounds vertex positions to nearest 8th
+                if (round)
+                    pos = pos.RoundToStep(Extensions.MapVertexRound);
+
+                // uses existing vertex instead of creating a new one, slow
                 if (dedupe)
                 {
                     for (int i = 0; i < verts.Count; i++)
                     {
-                        if (verts[i].Position.EquivalentTo(pos))
+                        if (verts[i].Position.EquivalentTo(pos, Extensions.MapVertexRound))
                         {
                             indices.Add(i);
                             return;
                         }
                     }
                 }
-
+                
                 verts.Add(new VertexPositionColor(pos, c));
                 indices.Add(verts.Count-1);
             }
