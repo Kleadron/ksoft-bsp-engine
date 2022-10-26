@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 
-namespace KSoft.Game.BSP
+namespace KSoft.Game.Objects
 {
     // Represents an entity's keyvalues and solids
     public class DiskEntity

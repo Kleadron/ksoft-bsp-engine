@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 
-namespace KSoft.Game.BSP
+namespace KSoft.Game.Primitives
 {
     public class Polygon
     {
@@ -121,73 +121,12 @@ namespace KSoft.Game.BSP
             origin /= numverts;
         }
 
-        //public PolySide ClassifyPoint(Vector3 point)
-        //{
-        //    //float dot = Vector3.Dot(point, plane.Normal) - plane.D;
-        //    float dot = Plane.DotCoordinate(point);
-        //    if (dot == 0)
-        //        return PolySide.Coinciding;
-        //    else if (dot < 0)
-        //        return PolySide.Behind;
-        //    else
-        //        return PolySide.Infront;
-        //}
-
-        //public bool PolygonInfront(Polygon target)
-        //{
-        //    for (int i = 0; i < target.vertices.Count; i++)
-        //    {
-        //        if (ClassifyPoint(target.vertices[i]) != PolySide.Infront)
-        //            return false;
-        //    }
-        //    return true;
-        //}
-
-        //public static bool IsConvexSet(Polygon[] polygons)
-        //{
-        //    for(int i = 0; i < polygons.Length; i++)
-        //    {
-        //        for (int j = 0; j < polygons.Length; j++)
-        //        {
-        //            if (i == j)
-        //                continue;
-
-        //            bool infront = polygons[i].PolygonInfront(polygons[j]);
-
-        //            Console.WriteLine("Compare " + i + " to " + j + ": " + infront);
-
-        //            // all polygons must face eachother
-        //            if (!infront)
-        //                return false;
-        //        }
-        //    }
-
-        //    return true;
-        //}
-
-        //public PolySide CalculateSide(Polygon target)
-        //{
-        //    int positives = 0, negatives = 0;
-
-        //    for (int i = 0; i < target.vertices.Count; i++)
-        //    {
-        //        PolySide side = ClassifyPoint(target.vertices[i]);
-
-        //        if (side == PolySide.Infront)
-        //            positives++;
-        //        else if (side == PolySide.Behind)
-        //            negatives++;
-        //    }
-
-        //    if (positives > 0 && negatives == 0)
-        //        return PolySide.Infront;
-        //    else if (positives == 0 && negatives > 0)
-        //        return PolySide.Behind;
-        //    else if (positives == 0 && negatives == 0)
-        //        return PolySide.Coinciding;
-        //    else
-        //        return PolySide.Spanning;
-        //}
+        public void RoundVertices()
+        {
+            for (int i = 0; i < vertices.Count; i++)
+                vertices[i] = vertices[i].RoundToStep(Extensions.MapVertexRound);
+            CalcOrigin();
+        }
 
         public PlaneClassification ClassifyAgainstPlane(Plane p)
         {
@@ -226,9 +165,9 @@ namespace KSoft.Game.BSP
         /// <param name="back">The back polygon</param>
         /// <param name="front">The front polygon</param>
         /// <returns>True if the split was successful</returns>
-        public bool Split(Plane clip, out Polygon back, out Polygon front)
+        public bool Split(Plane clip, out Polygon back, out Polygon front, float epsilon = Extensions.Epsilon)
         {
-            return Split(clip, out back, out front, out _, out _);
+            return Split(clip, out back, out front, out _, out _, epsilon);
         }
 
         /// <summary>
@@ -241,10 +180,8 @@ namespace KSoft.Game.BSP
         /// <param name="coplanarBack">If the polygon rests on the plane and points backward, this will not be null</param>
         /// <param name="coplanarFront">If the polygon rests on the plane and points forward, this will not be null</param>
         /// <returns>True if the split was successful</returns>
-        public bool Split(Plane clip, out Polygon back, out Polygon front, out Polygon coplanarBack, out Polygon coplanarFront)
+        public bool Split(Plane clip, out Polygon back, out Polygon front, out Polygon coplanarBack, out Polygon coplanarFront, float epsilon = Extensions.Epsilon)
         {
-            const float epsilon = Extensions.Epsilon;
-
             var distances = vertices.Select(clip.DotCoordinate).ToList();
 
             int cb = 0, cf = 0;

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace KSoft.Game.BSP
+namespace KSoft.Game.Primitives
 {
     // Contains the plane and properties of a surface.
     // Idea: separate properties into SurfaceInfo? this way polygons can create new Surfaces and not duplicate SurfaceInfo

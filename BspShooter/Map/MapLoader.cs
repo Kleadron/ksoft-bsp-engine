@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using KSoft.Game.Objects;
+using KSoft.Game.Primitives;
 using Microsoft.Xna.Framework;
 
-namespace KSoft.Game.BSP
+namespace KSoft.Game.Map
 {
     public static class MapLoader
     {

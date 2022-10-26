@@ -4,15 +4,17 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using KleadronCommon.Data;
-using KSoft.Game.BSP;
+using KSoft.Game.Map;
+using KSoft.Game.Objects;
+using KSoft.Game.Primitives;
 using KleadronCommon;
 using System.IO;
 using QoiSharp;
+using System.Diagnostics;
 
 namespace KSoft.Game
 {
@@ -53,7 +55,16 @@ namespace KSoft.Game
 
         int axisSize = 64;
         bool screenshotQueued = false;
-        bool drawWireframe = true;
+
+        enum WireframeMode
+        {
+            Off,
+            Surfaces,
+            XRaySurfaces,
+            XRay,
+            NUM_MODES
+        }
+        WireframeMode wireframeMode;
 
         protected override void OnExiting(object sender, EventArgs args)
         {
@@ -140,7 +151,7 @@ namespace KSoft.Game
 
             // favorite maps: dm3 and e3m5
 
-            string mapname = "qmaps/e3m5.map";
+            string mapname = "bsproom.map";
 
             if (!File.Exists(mapname))
             {
@@ -163,11 +174,12 @@ namespace KSoft.Game
             List<int> ilist = new List<int>();
             //renderverts = new VertexPositionColor[numrenderverts];
 
-            bool worldspawnOnly = false;
+            bool worldspawnOnly = true;
 
             if (worldspawnOnly)
             {
                 BuildEntitySolids(vlist, ilist, mapEntities[0]);
+                //BuildStaticGeo(vlist, ilist, mapEntities[0]);
             }
             else
             {
@@ -214,6 +226,134 @@ namespace KSoft.Game
             //BSPPolygonSide side = poly.ClassifyPoint(new Vector3(0, 0, -1));
         }
 
+        //void BuildStaticGeo(List<VertexPositionColor> verts, List<int> indices, DiskEntity entity)
+        //{
+        //    const float MinVertexSplitDistance = 3;
+        //    const float MapRoundEpsilon = 2;
+
+        //    void AddVert(Vector3 pos, Color c)
+        //    {
+        //        verts.Add(new VertexPositionColor(pos, c));
+        //        indices.Add(verts.Count - 1);
+        //    }
+
+        //    List<Polygon> polygons = new List<Polygon>();
+        //    foreach (Solid solid in entity.solids)
+        //        polygons.AddRange(solid.polygons);
+
+        //    Console.WriteLine("starting polys: " + polygons.Count);
+
+        //    List<BoundingBox> bboxes = new List<BoundingBox>();
+        //    foreach (Polygon poly in polygons)
+        //        bboxes.Add(BoundingBox.CreateFromPoints(poly.vertices));
+
+        //    //List<Polygon> newPolygons = new List<Polygon>();
+
+        //    int polyPrintInterval = 500;
+        //    int polysProcessed = 0;
+
+        //    for (int i = 0; i+1 < polygons.Count; i++)
+        //    {
+        //        Polygon poly1 = polygons[i];
+
+        //        // j should have been i + 1 the whole time, whoops
+        //        for(int j = i+1; j < polygons.Count; j++)
+        //        {
+        //            if (i == j)
+        //                continue;
+
+        //            BoundingBox poly1BB = bboxes[i];
+                    
+        //            poly1BB.Min -= Vector3.One * MapRoundEpsilon;
+        //            poly1BB.Max += Vector3.One * MapRoundEpsilon;
+
+        //            if (poly1BB.Min.X > poly1BB.Max.X)
+        //                poly1BB.Min.X = poly1BB.Max.X = (poly1BB.Min.X + poly1BB.Max.X) * 0.5f;
+        //            if (poly1BB.Min.Y > poly1BB.Max.Y)
+        //                poly1BB.Min.Y = poly1BB.Max.Y = (poly1BB.Min.Y + poly1BB.Max.Y) * 0.5f;
+        //            if (poly1BB.Min.Z > poly1BB.Max.Z)
+        //                poly1BB.Min.Z = poly1BB.Max.Z = (poly1BB.Min.Z + poly1BB.Max.Z) * 0.5f;
+
+        //            if (!poly1BB.Intersects(bboxes[j]))
+        //                continue;
+
+        //            Polygon poly2 = polygons[j];
+
+        //            if (poly1.ClassifyAgainstPlane(poly2.surface.plane, MapRoundEpsilon) == PlaneClassification.Spanning)
+        //            {
+        //                Polygon back, front;
+        //                bool didSplit = poly1.Split(poly2.surface.plane, out back, out front, MapRoundEpsilon); 
+
+        //                if (didSplit && back != null && front != null &&
+        //                    back.IsValid(MapRoundEpsilon, MinVertexSplitDistance) &&
+        //                    front.IsValid(MapRoundEpsilon, MinVertexSplitDistance))
+        //                {
+        //                    polygons[i] = front;
+        //                    polygons.Add(back);
+
+        //                    bboxes[i] = BoundingBox.CreateFromPoints(front.vertices);
+        //                    bboxes.Add(BoundingBox.CreateFromPoints(back.vertices));
+        //                }
+        //            }
+
+        //            if (poly2.ClassifyAgainstPlane(poly1.surface.plane, MapRoundEpsilon) == PlaneClassification.Spanning)
+        //            {
+        //                Polygon back, front;
+        //                bool didSplit = poly2.Split(poly1.surface.plane, out back, out front, MapRoundEpsilon);
+
+        //                if (didSplit && back != null && front != null &&
+        //                    back.IsValid(MapRoundEpsilon, MinVertexSplitDistance) &&
+        //                    front.IsValid(MapRoundEpsilon, MinVertexSplitDistance))
+        //                {
+        //                    polygons[j] = front;
+        //                    polygons.Add(back);
+
+        //                    bboxes[j] = BoundingBox.CreateFromPoints(front.vertices);
+        //                    bboxes.Add(BoundingBox.CreateFromPoints(back.vertices));
+        //                }
+        //            }
+        //        }
+
+        //        polysProcessed++;
+
+        //        if (polysProcessed % polyPrintInterval == 0)
+        //        {
+        //            Console.WriteLine("Processed " + polysProcessed + "/" + polygons.Count);
+        //        }
+        //    }
+
+
+
+        //    //int numPolys = 0;
+        //    //for(int firstPoly = 0; firstPoly < polygons.Count; firstPoly++)
+        //    //{
+
+        //    //}
+
+
+        //    Console.WriteLine("ending polys: " + polygons.Count);
+
+
+        //    foreach (Polygon poly in polygons)
+        //    {
+        //        Color c = RandomColor();
+        //        for (int j = 2; j < poly.vertices.Count; j++)
+        //        {
+        //            //verts.Add(new VertexPositionColor(poly.vertices[0], c));
+        //            //verts.Add(new VertexPositionColor(poly.vertices[j - 1], c));
+        //            //verts.Add(new VertexPositionColor(poly.vertices[j], c));
+
+        //            AddVert(poly.vertices[0], c);
+        //            AddVert(poly.vertices[j - 1], c);
+        //            AddVert(poly.vertices[j], c);
+
+        //            // fade color to reveal triangles and winding order
+        //            c *= 0.9f;
+        //            c.A = 255;
+        //        }
+        //    }
+        //}
+
         void BuildEntitySolids(List<VertexPositionColor> verts, List<int> indices, DiskEntity entity)
         {
             if (entity.solids.Count == 0)
@@ -231,11 +371,11 @@ namespace KSoft.Game
             void AddVert(Vector3 pos, Color c)
             {
                 const bool dedupe = false;
-                const bool round = true;
+                //const bool round = true;
 
                 // rounds vertex positions to nearest 8th
-                if (round)
-                    pos = pos.RoundToStep(Extensions.MapVertexRound);
+                //if (round)
+                //    pos = pos.RoundToStep(Extensions.MapVertexRound);
 
                 // uses existing vertex instead of creating a new one, slow
                 if (dedupe)
@@ -327,7 +467,7 @@ namespace KSoft.Game
             view = Matrix.CreateLookAt(new Vector3(32, 32, 32)*3, Vector3.Zero, Vector3.UnitZ);
 
             wireframeState = new RasterizerState();
-            wireframeState.CullMode = CullMode.CullCounterClockwiseFace;
+            wireframeState.CullMode = CullMode.None;
             wireframeState.FillMode = FillMode.WireFrame;
             //wireframeState.DepthBias = -0.0001f;
 
@@ -415,8 +555,16 @@ namespace KSoft.Game
             if (input.KeyPressed(Keys.F12))
                 screenshotQueued = true;
 
+            if (input.KeyPressed(Keys.F1))
+            {
+                Process.Start("explorer.exe", Directory.GetCurrentDirectory());
+            }
+
             if (input.KeyPressed(Keys.F2))
-                drawWireframe = !drawWireframe;
+            {
+                wireframeMode++;
+                wireframeMode = (WireframeMode)((int)wireframeMode % (int)WireframeMode.NUM_MODES);
+            }
 
             base.Update(gameTime);
         }
@@ -444,14 +592,21 @@ namespace KSoft.Game
             effect.Projection = proj;
             effect.World = world;
 
-            effect.VertexColorEnabled = true;
-            effect.CurrentTechnique.Passes[0].Apply();
-            GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length, renderindices, 0, renderindices.Length / 3);
-
-            if (drawWireframe)
+            if (wireframeMode != WireframeMode.XRay)
             {
-                effect.VertexColorEnabled = false;
+                effect.VertexColorEnabled = true;
+                effect.CurrentTechnique.Passes[0].Apply();
+                GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length, renderindices, 0, renderindices.Length / 3);
+            }
+
+            if (wireframeMode != WireframeMode.Off)
+            {
+                effect.VertexColorEnabled = wireframeMode == WireframeMode.XRay;
                 GraphicsDevice.RasterizerState = wireframeState;
+
+                if (wireframeMode == WireframeMode.XRaySurfaces || wireframeMode == WireframeMode.XRay)
+                    GraphicsDevice.DepthStencilState = DepthStencilState.None;
+
                 effect.CurrentTechnique.Passes[0].Apply();
                 GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length, renderindices, 0, renderindices.Length / 3);
             }

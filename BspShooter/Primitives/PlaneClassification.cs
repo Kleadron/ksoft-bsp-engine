@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace KSoft.Game.BSP
+namespace KSoft.Game.Primitives
 {
     public enum PlaneClassification
     {

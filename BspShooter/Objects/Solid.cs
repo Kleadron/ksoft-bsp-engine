@@ -2,25 +2,30 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using KSoft.Game.Primitives;
 using Microsoft.Xna.Framework;
 
-namespace KSoft.Game.BSP
+namespace KSoft.Game.Objects
 {
     // A solid represents a convex hull defined by plane surfaces.
     public class Solid
     {
         public List<Surface> surfaces; // Raw surface information used to generate the polygons.
+
+        //public List<Vector3> vertices;
         public List<Polygon> polygons; // 3D polygons.
         
         public Solid()
         {
             surfaces = new List<Surface>();
+            //vertices = new List<Vector3>();
             polygons = new List<Polygon>();
         }
 
         public Solid(List<Surface> sides)
         {
             surfaces = sides;
+            //vertices = new List<Vector3>();
             polygons = new List<Polygon>();
             BuildPolygons();
         }
@@ -67,20 +72,22 @@ namespace KSoft.Game.BSP
                     }
                 }
 
+                // snap vertices to nice integer cordinates (mostly)
+                polygon.RoundVertices();
                 polygons.Add(polygon);
             }
 
-            // Ensure all the faces point outwards
-            var origin = polygons.Aggregate(Vector3.Zero, (x, y) => x + y.origin) / polygons.Count;
-            for (var i = 0; i < polygons.Count; i++)
-            {
-                var face = polygons[i];
-                if (face.surface.plane.OnPlane(origin) >= 0)
-                {
-                    //polygons[i] = new Polygon(face.vertices.Reverse());
-                    polygons[i].vertices.Reverse();
-                }
-            }
+            // Ensure all the faces point outwards (I don't know if this is necessary but this has never fired, and probably never will)
+            //var origin = polygons.Aggregate(Vector3.Zero, (x, y) => x + y.origin) / polygons.Count;
+            //for (var i = 0; i < polygons.Count; i++)
+            //{
+            //    var face = polygons[i];
+            //    if (face.surface.plane.OnPlane(origin) >= 0)
+            //    {
+            //        //polygons[i] = new Polygon(face.vertices.Reverse());
+            //        polygons[i].vertices.Reverse();
+            //    }
+            //}
         }
     }
 }

@@ -1,10 +1,11 @@
-﻿using Microsoft.Xna.Framework;
+﻿using KSoft.Game.Primitives;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace KSoft.Game.BSP
+namespace KSoft.Game.Map
 {
     public class MapData
     {
