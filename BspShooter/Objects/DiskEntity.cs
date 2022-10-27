@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using KSoft.Game.Primitives;
 using Microsoft.Xna.Framework;
 
 namespace KSoft.Game.Objects
@@ -36,6 +37,16 @@ namespace KSoft.Game.Objects
                 
                 return flags;
             }
+        }
+
+        public List<Polygon> CollectSolidPolygons()
+        {
+            List<Polygon> polygons = new List<Polygon>();
+
+            foreach (Solid solid in solids)
+                polygons.AddRange(solid.polygons);
+
+            return polygons;
         }
     }
 }

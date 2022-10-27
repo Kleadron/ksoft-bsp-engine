@@ -253,5 +253,29 @@ namespace KSoft.Game.Primitives
 
             return true;
         }
+
+        public bool IsValid(float minimumDistance)
+        {
+            // check distances
+            for(int i = 0; i+1 < vertices.Count; i++)
+            {
+                for(int j = i+1; j < vertices.Count; j++)
+                {
+                    if (vertices[i] == vertices[j])
+                        return false;
+                    float dist = Vector3.Distance(vertices[i], vertices[j]);
+                    if (dist < minimumDistance)
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        public static Polygon Merge(Polygon poly1, Polygon poly2)
+        {
+
+
+            return null;
+        }
     }
 }
