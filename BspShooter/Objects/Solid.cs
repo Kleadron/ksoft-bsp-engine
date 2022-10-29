@@ -47,8 +47,8 @@ namespace KSoft.Game.Objects
 
             foreach(Surface surface in surfaces)
             {
-                if (surface.nodraw)
-                    continue;
+                //if (surface.nodraw)
+                //    continue;
 
                 // the plane size argument may need to be configurable or adaptable to map or largest brush size
                 Polygon polygon = new Polygon(surface, 4096);

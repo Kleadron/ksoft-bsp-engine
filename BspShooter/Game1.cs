@@ -375,7 +375,7 @@ namespace KSoft.Game
             //font = Content.Load<SpriteFont>("font");
 
             // favorite maps: dm3 and e3m5
-            LoadMap("qmaps/e4m1.map");
+            LoadMap("qmaps/e1m1.map");
         }
 
         /// <summary>
