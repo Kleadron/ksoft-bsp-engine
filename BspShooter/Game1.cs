@@ -26,8 +26,10 @@ namespace KSoft.Game
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        VertexPositionColor[] renderverts;
-        int[] renderindices;
+        //VertexPositionColor[] renderverts;
+        //int[] renderindices;
+        MapModel worldModel;
+        List<MapModel> mapModels;
 
         VertexPositionColor[] axisverts;
         BasicEffect effect;
@@ -40,13 +42,13 @@ namespace KSoft.Game
 
         //SpriteFont font;
 
-        Random r = new Random();
+        static Random r = new Random();
 
         Vector3 cameraOrigin = new Vector3(128, 0, 32);
         float cameraPitch = 20;
         float cameraYaw = 180;
 
-        Color RandomColor()
+        public static Color RandomColor()
         {
             return new Color(r.Next(255), r.Next(255), r.Next(255));
         }
@@ -97,69 +99,11 @@ namespace KSoft.Game
             Console.WriteLine("Engine Created");
             IsMouseVisible = true;
             Window.AllowUserResizing = true;
+        }
 
-            float lineSize = axisSize / 2;
-
-            axisverts = new VertexPositionColor[]
-            {
-                new VertexPositionColor(new Vector3(0, 0, 0), Color.Red),
-                new VertexPositionColor(new Vector3(lineSize, 0, 0), Color.Red),
-
-                new VertexPositionColor(new Vector3(0, 0, 0), Color.Lime),
-                new VertexPositionColor(new Vector3(0, lineSize, 0), Color.Lime),
-
-                new VertexPositionColor(new Vector3(0, 0, 0), Color.Blue),
-                new VertexPositionColor(new Vector3(0, 0, lineSize), Color.Blue),
-
-                //new VertexPositionColor(new Vector3(0, 0, 0), Color.DarkRed),
-                //new VertexPositionColor(new Vector3(-lineSize, 0, 0), Color.DarkRed),
-
-                //new VertexPositionColor(new Vector3(0, 0, 0), Color.Green),
-                //new VertexPositionColor(new Vector3(0, -lineSize, 0), Color.Green),
-
-                //new VertexPositionColor(new Vector3(0, 0, 0), Color.DarkBlue),
-                //new VertexPositionColor(new Vector3(0, 0, -lineSize), Color.DarkBlue),
-            };
-
-            /*
-               ( -16 -16 -64 ) ( -16 -15 -64 ) ( -16 -16 -63 ) __TB_empty 0 0 0 1 1
-               ( -16 -16 -64 ) ( -16 -16 -63 ) ( -15 -16 -64 ) __TB_empty 0 0 0 1 1
-               ( -16 -16 -16 ) ( -15 -16 -16 ) ( -16 -15 -16 ) __TB_empty 0 0 0 1 1
-
-               ( 48 64 16 ) ( 48 65 16 ) ( 49 64 16 ) __TB_empty 0 0 0 1 1
-               ( 48 16 -48 ) ( 49 16 -48 ) ( 48 16 -47 ) __TB_empty 0 0 0 1 1
-               ( 16 64 -48 ) ( 16 64 -47 ) ( 16 65 -48 ) __TB_empty 0 0 0 1 1
-             */
-
-            //Polygon[] blocksolid = new Polygon[]
-            //{
-            //    new Polygon(-16, -16, -64,       -16, -15, -64,      -16, -16, -63),
-            //    new Polygon(-16, -16, -64,       -16, -16, -63,      -15, -16, -64),
-            //    new Polygon(-16, -16, -16,       -15, -16, -16,      -16, -15, -16),
-
-            //    new Polygon(48, 64, 16,          48, 65, 16,         49, 64, 16),
-            //    new Polygon(48, 16, -48,         49, 16, -48,        48, 16, -47),
-            //    new Polygon(16, 64, -48,         16, 64, -47,        16, 65, -48),
-            //};
-
-            //Solid blocksolid = new Solid(
-            //    new Surface(-16, -16, -64, -16, -15, -64, -16, -16, -63),
-            //    new Surface(-16, -16, -64, -16, -16, -63, -15, -16, -64),
-            //    new Surface(-16, -16, -16, -15, -16, -16, -16, -15, -16),
-
-            //    new Surface(48, 64, 16, 48, 65, 16, 49, 64, 16),
-            //    new Surface(48, 16, -48, 49, 16, -48, 48, 16, -47),
-
-            //    new Surface(16, 0, 0, 0, 0, 16, 0, 16, 0), //(16 0 0)(0 0 16)(0 16 0) __TB_empty 0 0 0 1 1
-            //    new Surface(0, 16, 16, 16, 144, 0, 16, 16, 0),
-
-            //    new Surface(16, 64, -48, 16, 64, -47, 16, 65, -48));
-
-            //List<Solid> solids = MapLoader.GetSolids("Content/industrial.map");
-
-            // favorite maps: dm3 and e3m5
-
-            string mapname = "qmaps/e4m1.map";
+        void LoadMap(string mapname)
+        {
+            Console.WriteLine("Loading Map: " + mapname);
 
             if (!File.Exists(mapname))
             {
@@ -170,198 +114,50 @@ namespace KSoft.Game
 
             Console.WriteLine("Loaded Entities");
 
-            foreach(DiskEntity ent in mapEntities)
+            foreach (DiskEntity ent in mapEntities)
             {
                 Console.WriteLine("\t" + ent.ClassName);
             }
 
-            //List<Solid> solids = mapEntities[0].solids;
+            
 
-            //int numrenderverts = blocksolid.polygons.Count * 3;
-            List<VertexPositionColor> vlist = new List<VertexPositionColor>();
-            List<int> ilist = new List<int>();
-            //renderverts = new VertexPositionColor[numrenderverts];
+            mapModels = new List<MapModel>();
 
-            bool worldspawnOnly = true;
+            Console.WriteLine("Building Models");
 
-            if (worldspawnOnly)
+            worldModel = new MapModel(GraphicsDevice, mapEntities[0].CollectSolidPolygons());
+            mapModels.Add(worldModel);
+
+            Console.Write("WORLD");
+            Console.Write("\tMIN[\tX" + worldModel.bb.Min.X + "\tY" + worldModel.bb.Min.Y + "\tZ" + worldModel.bb.Min.Z + "\t]");
+            Console.Write("\tMAX[\tX" + worldModel.bb.Max.X + "\tY" + worldModel.bb.Max.Y + "\tZ" + worldModel.bb.Max.Z + "\t]");
+            Console.Write("\tSIZE[\tX" + worldModel.size.X + "\tY" + worldModel.size.Y + "\tZ" + worldModel.size.Z + "\t]\n");
+
+            //Console.WriteLine("Map Dimensions: " + worldModel.bb.Min + " " + worldModel.bb.Max);
+            //Console.WriteLine("Size: " + worldModel.size);
+
+            bool worldspawnOnly = false;
+            if (!worldspawnOnly)
             {
-                //BuildEntitySolids(vlist, ilist, mapEntities[0]);
-                //BuildStaticGeo(vlist, ilist, mapEntities[0]);
-                BuildSplitGeometry(vlist, ilist, mapEntities[0]);
-            }
-            else
-            {
-                foreach(DiskEntity entity in mapEntities)
-                    BuildEntitySolids(vlist, ilist, entity);
-            }
+                for (int i = 1; i < mapEntities.Count; i++)
+                {
+                    DiskEntity diskEnt = mapEntities[i];
 
-            renderverts = vlist.ToArray();
-            renderindices = ilist.ToArray();
-
-            Vector3 min = Vector3.One * 4096;
-            Vector3 max = Vector3.One * -4096;
-
-            for(int i = 0; i < renderverts.Length; i++)
-            {
-                Vector3 check = renderverts[i].Position;
-
-                if (min.X > check.X)
-                    min.X = check.X;
-                if (min.Y > check.Y)
-                    min.Y = check.Y;
-                if (min.Z > check.Z)
-                    min.Z = check.Z;
-
-                if (max.X < check.X)
-                    max.X = check.X;
-                if (max.Y < check.Y)
-                    max.Y = check.Y;
-                if (max.Z < check.Z)
-                    max.Z = check.Z;
+                    if (diskEnt.solids.Count > 0)
+                    {
+                        MapModel model = new MapModel(GraphicsDevice, diskEnt.CollectSolidPolygons());
+                        Console.Write("ENT" + i);
+                        Console.Write("\tMIN[\tX" + model.bb.Min.X + "\tY" + model.bb.Min.Y + "\tZ" + model.bb.Min.Z + "\t]");
+                        Console.Write("\tMAX[\tX" + model.bb.Max.X + "\tY" + model.bb.Max.Y + "\tZ" + model.bb.Max.Z + "\t]");
+                        Console.Write("\tSIZE[\tX" + model.size.X + "\tY" + model.size.Y + "\tZ" + model.size.Z + "\t]\n");
+                    }
+                }
             }
 
-            Vector3 size = max - min;
 
-            Console.WriteLine("Map Dimensions: " + min + " " + max);
-            Console.WriteLine("Size: " + size);
 
-            //bool convex = Polygon.IsConvexSet(blocksolid);
-
-            //Vector3 a = new Vector3(0, 0, 10);
-
-            //BSPTreePolygon poly = new BSPTreePolygon(Vector3.Zero+a, Vector3.UnitY+a, Vector3.UnitX+a);
-
-            //BSPPolygonSide side = poly.ClassifyPoint(new Vector3(0, 0, -1));
+            
         }
-
-        //void BuildStaticGeo(List<VertexPositionColor> verts, List<int> indices, DiskEntity entity)
-        //{
-        //    const float MinVertexSplitDistance = 3;
-        //    const float MapRoundEpsilon = 2;
-
-        //    void AddVert(Vector3 pos, Color c)
-        //    {
-        //        verts.Add(new VertexPositionColor(pos, c));
-        //        indices.Add(verts.Count - 1);
-        //    }
-
-        //    List<Polygon> polygons = new List<Polygon>();
-        //    foreach (Solid solid in entity.solids)
-        //        polygons.AddRange(solid.polygons);
-
-        //    Console.WriteLine("starting polys: " + polygons.Count);
-
-        //    List<BoundingBox> bboxes = new List<BoundingBox>();
-        //    foreach (Polygon poly in polygons)
-        //        bboxes.Add(BoundingBox.CreateFromPoints(poly.vertices));
-
-        //    //List<Polygon> newPolygons = new List<Polygon>();
-
-        //    int polyPrintInterval = 500;
-        //    int polysProcessed = 0;
-
-        //    for (int i = 0; i+1 < polygons.Count; i++)
-        //    {
-        //        Polygon poly1 = polygons[i];
-
-        //        // j should have been i + 1 the whole time, whoops
-        //        for(int j = i+1; j < polygons.Count; j++)
-        //        {
-        //            if (i == j)
-        //                continue;
-
-        //            BoundingBox poly1BB = bboxes[i];
-                    
-        //            poly1BB.Min -= Vector3.One * MapRoundEpsilon;
-        //            poly1BB.Max += Vector3.One * MapRoundEpsilon;
-
-        //            if (poly1BB.Min.X > poly1BB.Max.X)
-        //                poly1BB.Min.X = poly1BB.Max.X = (poly1BB.Min.X + poly1BB.Max.X) * 0.5f;
-        //            if (poly1BB.Min.Y > poly1BB.Max.Y)
-        //                poly1BB.Min.Y = poly1BB.Max.Y = (poly1BB.Min.Y + poly1BB.Max.Y) * 0.5f;
-        //            if (poly1BB.Min.Z > poly1BB.Max.Z)
-        //                poly1BB.Min.Z = poly1BB.Max.Z = (poly1BB.Min.Z + poly1BB.Max.Z) * 0.5f;
-
-        //            if (!poly1BB.Intersects(bboxes[j]))
-        //                continue;
-
-        //            Polygon poly2 = polygons[j];
-
-        //            if (poly1.ClassifyAgainstPlane(poly2.surface.plane, MapRoundEpsilon) == PlaneClassification.Spanning)
-        //            {
-        //                Polygon back, front;
-        //                bool didSplit = poly1.Split(poly2.surface.plane, out back, out front, MapRoundEpsilon); 
-
-        //                if (didSplit && back != null && front != null &&
-        //                    back.IsValid(MapRoundEpsilon, MinVertexSplitDistance) &&
-        //                    front.IsValid(MapRoundEpsilon, MinVertexSplitDistance))
-        //                {
-        //                    polygons[i] = front;
-        //                    polygons.Add(back);
-
-        //                    bboxes[i] = BoundingBox.CreateFromPoints(front.vertices);
-        //                    bboxes.Add(BoundingBox.CreateFromPoints(back.vertices));
-        //                }
-        //            }
-
-        //            if (poly2.ClassifyAgainstPlane(poly1.surface.plane, MapRoundEpsilon) == PlaneClassification.Spanning)
-        //            {
-        //                Polygon back, front;
-        //                bool didSplit = poly2.Split(poly1.surface.plane, out back, out front, MapRoundEpsilon);
-
-        //                if (didSplit && back != null && front != null &&
-        //                    back.IsValid(MapRoundEpsilon, MinVertexSplitDistance) &&
-        //                    front.IsValid(MapRoundEpsilon, MinVertexSplitDistance))
-        //                {
-        //                    polygons[j] = front;
-        //                    polygons.Add(back);
-
-        //                    bboxes[j] = BoundingBox.CreateFromPoints(front.vertices);
-        //                    bboxes.Add(BoundingBox.CreateFromPoints(back.vertices));
-        //                }
-        //            }
-        //        }
-
-        //        polysProcessed++;
-
-        //        if (polysProcessed % polyPrintInterval == 0)
-        //        {
-        //            Console.WriteLine("Processed " + polysProcessed + "/" + polygons.Count);
-        //        }
-        //    }
-
-
-
-        //    //int numPolys = 0;
-        //    //for(int firstPoly = 0; firstPoly < polygons.Count; firstPoly++)
-        //    //{
-
-        //    //}
-
-
-        //    Console.WriteLine("ending polys: " + polygons.Count);
-
-
-        //    foreach (Polygon poly in polygons)
-        //    {
-        //        Color c = RandomColor();
-        //        for (int j = 2; j < poly.vertices.Count; j++)
-        //        {
-        //            //verts.Add(new VertexPositionColor(poly.vertices[0], c));
-        //            //verts.Add(new VertexPositionColor(poly.vertices[j - 1], c));
-        //            //verts.Add(new VertexPositionColor(poly.vertices[j], c));
-
-        //            AddVert(poly.vertices[0], c);
-        //            AddVert(poly.vertices[j - 1], c);
-        //            AddVert(poly.vertices[j], c);
-
-        //            // fade color to reveal triangles and winding order
-        //            c *= 0.9f;
-        //            c.A = 255;
-        //        }
-        //    }
-        //}
 
         void BuildSplitGeometry(List<VertexPositionColor> verts, List<int> indices, DiskEntity entity)
         {
@@ -512,85 +308,7 @@ namespace KSoft.Game
             }
         }
 
-        void BuildEntitySolids(List<VertexPositionColor> verts, List<int> indices, DiskEntity entity)
-        {
-            if (entity.solids.Count == 0)
-                return;
-
-            int numSolids = entity.solids.Count;
-            int solidPrintInterval = 100;
-            int solidsProcessed = 0;
-
-            bool randomColorPerSurface = false;
-
-            Console.WriteLine("Building " + numSolids + " solids...");
-
-            // dedupe
-            void AddVert(Vector3 pos, Color c)
-            {
-                const bool dedupe = false;
-                //const bool round = true;
-
-                // rounds vertex positions to nearest 8th
-                //if (round)
-                //    pos = pos.RoundToStep(Extensions.MapVertexRound);
-
-                // uses existing vertex instead of creating a new one, slow
-                if (dedupe)
-                {
-                    for (int i = 0; i < verts.Count; i++)
-                    {
-                        if (verts[i].Position.EquivalentTo(pos, Extensions.MapVertexRound))
-                        {
-                            indices.Add(i);
-                            return;
-                        }
-                    }
-                }
-                
-                verts.Add(new VertexPositionColor(pos, c));
-                indices.Add(verts.Count-1);
-            }
-
-            Color c1 = Color.White;
-
-            foreach (Solid solid in entity.solids)
-            {
-                if (!randomColorPerSurface)
-                    c1 = RandomColor();
-
-                foreach (Polygon poly in solid.polygons)
-                {
-                    if (randomColorPerSurface)
-                        c1 = RandomColor();
-
-                    Color c = c1;
-                    for (int j = 2; j < poly.vertices.Count; j++)
-                    {
-                        //verts.Add(new VertexPositionColor(poly.vertices[0], c));
-                        //verts.Add(new VertexPositionColor(poly.vertices[j - 1], c));
-                        //verts.Add(new VertexPositionColor(poly.vertices[j], c));
-
-                        AddVert(poly.vertices[0], c);
-                        AddVert(poly.vertices[j - 1], c);
-                        AddVert(poly.vertices[j], c);
-
-                        // fade color to reveal triangles and winding order
-                        c *= 0.9f;
-                        c.A = 255;
-                    }
-                }
-
-                solidsProcessed++;
-
-                if (solidsProcessed % solidPrintInterval == 0)
-                {
-                    Console.WriteLine("Processed " + solidsProcessed + "/" + numSolids);
-                }
-            }
-
-            Console.WriteLine("Built entity solids " + numSolids);
-        }
+        
 
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
@@ -629,7 +347,33 @@ namespace KSoft.Game
             wireframeState.FillMode = FillMode.WireFrame;
             //wireframeState.DepthBias = -0.0001f;
 
+            float lineSize = axisSize / 2;
+
+            axisverts = new VertexPositionColor[]
+            {
+                new VertexPositionColor(new Vector3(0, 0, 0), Color.Red),
+                new VertexPositionColor(new Vector3(lineSize, 0, 0), Color.Red),
+
+                new VertexPositionColor(new Vector3(0, 0, 0), Color.Lime),
+                new VertexPositionColor(new Vector3(0, lineSize, 0), Color.Lime),
+
+                new VertexPositionColor(new Vector3(0, 0, 0), Color.Blue),
+                new VertexPositionColor(new Vector3(0, 0, lineSize), Color.Blue),
+
+                //new VertexPositionColor(new Vector3(0, 0, 0), Color.DarkRed),
+                //new VertexPositionColor(new Vector3(-lineSize, 0, 0), Color.DarkRed),
+
+                //new VertexPositionColor(new Vector3(0, 0, 0), Color.Green),
+                //new VertexPositionColor(new Vector3(0, -lineSize, 0), Color.Green),
+
+                //new VertexPositionColor(new Vector3(0, 0, 0), Color.DarkBlue),
+                //new VertexPositionColor(new Vector3(0, 0, -lineSize), Color.DarkBlue),
+            };
+
             //font = Content.Load<SpriteFont>("font");
+
+            // favorite maps: dm3 and e3m5
+            LoadMap("qmaps/e4m1.map");
         }
 
         /// <summary>
@@ -753,8 +497,8 @@ namespace KSoft.Game
             if (wireframeMode != WireframeMode.XRay)
             {
                 effect.VertexColorEnabled = true;
-                effect.CurrentTechnique.Passes[0].Apply();
-                GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length, renderindices, 0, renderindices.Length / 3);
+                foreach(MapModel model in mapModels)
+                    model.Draw(effect.CurrentTechnique.Passes[0]);
             }
 
             if (wireframeMode != WireframeMode.Off)
@@ -766,7 +510,8 @@ namespace KSoft.Game
                     GraphicsDevice.DepthStencilState = DepthStencilState.None;
 
                 effect.CurrentTechnique.Passes[0].Apply();
-                GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length, renderindices, 0, renderindices.Length / 3);
+                foreach (MapModel model in mapModels)
+                    model.Draw(effect.CurrentTechnique.Passes[0]);
             }
 
             effect.VertexColorEnabled = true;

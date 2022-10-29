@@ -110,6 +110,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Map\MapBuilder.cs" />
+    <Compile Include="Map\MapModel.cs" />
     <Compile Include="Objects\DiskEntity.cs" />
     <Compile Include="Map\MapData.cs" />
     <Compile Include="Map\MapLoader.cs" />
