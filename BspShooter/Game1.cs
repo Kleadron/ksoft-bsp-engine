@@ -146,6 +146,8 @@ namespace KSoft.Game
                     if (diskEnt.solids.Count > 0)
                     {
                         MapModel model = new MapModel(GraphicsDevice, diskEnt.CollectSolidPolygons());
+                        mapModels.Add(model);
+
                         Console.Write("ENT" + i);
                         Console.Write("\tMIN[\tX" + model.bb.Min.X + "\tY" + model.bb.Min.Y + "\tZ" + model.bb.Min.Z + "\t]");
                         Console.Write("\tMAX[\tX" + model.bb.Max.X + "\tY" + model.bb.Max.Y + "\tZ" + model.bb.Max.Z + "\t]");

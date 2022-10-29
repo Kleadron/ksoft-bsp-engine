@@ -72,7 +72,7 @@ namespace KSoft.Game.Map
             if (polygons.Count == 0)
                 return;
 
-            bool randomColorPerSurface = true;
+            bool randomColorPerSurface = false;
 
             // dedupe
             void AddVert(Vector3 pos, Color c)
@@ -127,8 +127,11 @@ namespace KSoft.Game.Map
 
         public void Draw(EffectPass pass)
         {
-            pass.Apply();
-            device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length, renderindices, 0, renderindices.Length / 3);
+            if (renderverts.Length > 0 && renderindices.Length > 0)
+            {
+                pass.Apply();
+                device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length, renderindices, 0, renderindices.Length / 3);
+            }
         }
     }
 }
