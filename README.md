@@ -17,3 +17,5 @@ Press Escape to lock the cursor or use the arrow keys to aim.
 MIT Admer456/SoftRenda: https://github.com/Admer456/SoftRenda 
 
 MIT LogicAndTrick/sledge-formats: https://github.com/LogicAndTrick/sledge-formats
+
+MIT Cafu Engine: https://www.cafu.de/
