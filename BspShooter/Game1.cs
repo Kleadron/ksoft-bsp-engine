@@ -15,6 +15,7 @@ using KleadronCommon;
 using System.IO;
 using QoiSharp;
 using System.Diagnostics;
+using KSoft.Game.Graphics;
 
 namespace KSoft.Game
 {
@@ -41,6 +42,8 @@ namespace KSoft.Game
         RasterizerState wireframeState;
 
         //SpriteFont font;
+        DebugFontRenderer fontRenderer;
+        Texture2D pixel;
 
         static Random r = new Random();
 
@@ -117,6 +120,16 @@ namespace KSoft.Game
             foreach (DiskEntity ent in mapEntities)
             {
                 Console.WriteLine("\t" + ent.ClassName);
+
+                if (ent.ClassName == "info_player_start")
+                {
+                    Vector3 origin = ent.Origin;
+                    Vector3 angles = ent.Angles;
+
+                    cameraOrigin = origin;
+                    cameraPitch = ent.Angles.Y;
+                    cameraYaw = ent.Angles.Z;
+                }
             }
 
             
@@ -125,7 +138,7 @@ namespace KSoft.Game
 
             Console.WriteLine("Building Models");
 
-            worldModel = new MapModel(GraphicsDevice, mapEntities[0].CollectSolidPolygons());
+            worldModel = new MapModel(GraphicsDevice, mapEntities[0].CollectSolidPolygons(), new Color(0.75f, 0.75f, 0.75f));
             mapModels.Add(worldModel);
 
             Console.Write("WORLD");
@@ -161,154 +174,154 @@ namespace KSoft.Game
             
         }
 
-        void BuildSplitGeometry(List<VertexPositionColor> verts, List<int> indices, DiskEntity entity)
-        {
-            const float MinVertexSplitDistance = Extensions.MapVertexRound;
+//        void BuildSplitGeometry(List<VertexPositionColor> verts, List<int> indices, DiskEntity entity)
+//        {
+//            const float MinVertexSplitDistance = Extensions.MapVertexRound;
 
-            // utility functions
-            void AddVert(Vector3 pos, Color c)
-            {
-                verts.Add(new VertexPositionColor(pos, c));
-                indices.Add(verts.Count - 1);
-            }
+//            // utility functions
+//            void AddVert(Vector3 pos, Color c)
+//            {
+//                verts.Add(new VertexPositionColor(pos, c));
+//                indices.Add(verts.Count - 1);
+//            }
 
-            int polyPrintInterval = 500;
-            int polysProcessed = 0;
+//            int polyPrintInterval = 500;
+//            int polysProcessed = 0;
 
-            // collect polygons from the entity's solids
-            List<Polygon> polygons = entity.CollectSolidPolygons();
+//            // collect polygons from the entity's solids
+//            List<Polygon> polygons = entity.CollectSolidPolygons();
 
-            Console.WriteLine("starting polys: " + polygons.Count);
+//            Console.WriteLine("starting polys: " + polygons.Count);
 
-            // create bounding boxes
-            List<BoundingBox> bboxes = new List<BoundingBox>();
-            foreach (Polygon poly in polygons)
-                bboxes.Add(BoundingBox.CreateFromPoints(poly.vertices));
-
-
-            // start splitting intersecting polygons
-
-            // poly1
-            for (int i = 0; i + 1 < polygons.Count; i++)
-            {
-                Polygon poly1 = polygons[i];
-
-                // poly2
-                for (int j = i + 1; j < polygons.Count; j++)
-                {
-                    BoundingBox poly1BB = bboxes[i];
-
-                    // inflate bounding box a tiny bit
-                    poly1BB.Max += Vector3.One * Extensions.MapVertexRound;
-                    poly1BB.Min -= Vector3.One * Extensions.MapVertexRound;
-
-                    BoundingBox poly2BB = bboxes[j];
-
-                    // only try splitting polygons that are vaguely within the same area
-                    if (!poly1BB.Intersects(poly2BB))
-                        continue;
-
-                    Polygon poly2 = polygons[j];
-
-                    Polygon back, front;
-
-                    bool split = poly1.Split(poly2.surface.plane, out back, out front);
-
-                    // poly1 was successfully split by poly2
-                    if (split &&
-                        back.IsValid(MinVertexSplitDistance) && front.IsValid(MinVertexSplitDistance))
-                    {
-                        // replace existing polygon and add a new one
-                        polygons[i] = front;
-                        polygons.Add(back);
-
-                        bboxes[i] = BoundingBox.CreateFromPoints(front.vertices);
-                        bboxes.Add(BoundingBox.CreateFromPoints(back.vertices));
-                    }
-
-                    // update reference (I think I forgot to do this originally)
-                    poly1 = polygons[i];
-
-                    // check the other one
-                    split = poly2.Split(poly1.surface.plane, out back, out front);
-
-                    // poly2 was successfully split by poly1
-                    if (split &&
-                        back.IsValid(MinVertexSplitDistance) && front.IsValid(MinVertexSplitDistance))
-                    {
-                        // replace existing polygon and add a new one
-                        polygons[j] = front;
-                        polygons.Add(back);
-
-                        bboxes[j] = BoundingBox.CreateFromPoints(front.vertices);
-                        bboxes.Add(BoundingBox.CreateFromPoints(back.vertices));
-                    }
-
-                    // update status
-                    if (j % polyPrintInterval == 0)
-                    {
-                        Console.WriteLine(i + "/" + polygons.Count);
-                    }
-                }
-            }
+//            // create bounding boxes
+//            List<BoundingBox> bboxes = new List<BoundingBox>();
+//            foreach (Polygon poly in polygons)
+//                bboxes.Add(BoundingBox.CreateFromPoints(poly.vertices));
 
 
-            // try and merge polygons 
-#if false
-            int numPolys = 0;
+//            // start splitting intersecting polygons
 
-            for(int firstPoly = 0; firstPoly < polygons.Count; firstPoly += numPolys)
-            {
-                int poly1Index = 0;
-                numPolys = 1;
+//            // poly1
+//            for (int i = 0; i + 1 < polygons.Count; i++)
+//            {
+//                Polygon poly1 = polygons[i];
 
-                for(int i = firstPoly + numPolys; i < polygons.Count; i++)
-                {
-                    PlaneClassification planeClass = polygons[i].ClassifyAgainstPlane(polygons[firstPoly].surface.plane);
+//                // poly2
+//                for (int j = i + 1; j < polygons.Count; j++)
+//                {
+//                    BoundingBox poly1BB = bboxes[i];
 
-                    if (planeClass == PlaneClassification.OnPlane)
-                    {
-                        Extensions.Swap(polygons, firstPoly + numPolys, i);
-                        numPolys++;
-                    }
-                }
+//                    // inflate bounding box a tiny bit
+//                    poly1BB.Max += Vector3.One * Extensions.MapVertexRound;
+//                    poly1BB.Min -= Vector3.One * Extensions.MapVertexRound;
 
-                for(int i = firstPoly; i < firstPoly + numPolys; i++)
-                {
-                    for(int j = firstPoly; j < firstPoly + numPolys; j++)
-                    {
-                        Polygon p1 = polygons[i];
-                        Polygon p2 = polygons[j];
+//                    BoundingBox poly2BB = bboxes[j];
 
-                        //if (p1.surface != p2.surface)
-                        //    continue;
+//                    // only try splitting polygons that are vaguely within the same area
+//                    if (!poly1BB.Intersects(poly2BB))
+//                        continue;
 
-                        Polygon newPoly = null;
-                    }
-                }
-            }
-#endif
+//                    Polygon poly2 = polygons[j];
+
+//                    Polygon back, front;
+
+//                    bool split = poly1.Split(poly2.surface.plane, out back, out front);
+
+//                    // poly1 was successfully split by poly2
+//                    if (split &&
+//                        back.IsValid(MinVertexSplitDistance) && front.IsValid(MinVertexSplitDistance))
+//                    {
+//                        // replace existing polygon and add a new one
+//                        polygons[i] = front;
+//                        polygons.Add(back);
+
+//                        bboxes[i] = BoundingBox.CreateFromPoints(front.vertices);
+//                        bboxes.Add(BoundingBox.CreateFromPoints(back.vertices));
+//                    }
+
+//                    // update reference (I think I forgot to do this originally)
+//                    poly1 = polygons[i];
+
+//                    // check the other one
+//                    split = poly2.Split(poly1.surface.plane, out back, out front);
+
+//                    // poly2 was successfully split by poly1
+//                    if (split &&
+//                        back.IsValid(MinVertexSplitDistance) && front.IsValid(MinVertexSplitDistance))
+//                    {
+//                        // replace existing polygon and add a new one
+//                        polygons[j] = front;
+//                        polygons.Add(back);
+
+//                        bboxes[j] = BoundingBox.CreateFromPoints(front.vertices);
+//                        bboxes.Add(BoundingBox.CreateFromPoints(back.vertices));
+//                    }
+
+//                    // update status
+//                    if (j % polyPrintInterval == 0)
+//                    {
+//                        Console.WriteLine(i + "/" + polygons.Count);
+//                    }
+//                }
+//            }
 
 
-            // DONE SPLITTING
-            Console.WriteLine("ending polys: " + polygons.Count);
+//            // try and merge polygons 
+//#if false
+//            int numPolys = 0;
 
-            // create graphics
-            foreach (Polygon poly in polygons)
-            {
-                Color c = RandomColor();
-                for (int j = 2; j < poly.vertices.Count; j++)
-                {
-                    AddVert(poly.vertices[0], c);
-                    AddVert(poly.vertices[j - 1], c);
-                    AddVert(poly.vertices[j], c);
+//            for(int firstPoly = 0; firstPoly < polygons.Count; firstPoly += numPolys)
+//            {
+//                int poly1Index = 0;
+//                numPolys = 1;
 
-                    // fade color to reveal triangles and winding order
-                    c *= 0.9f;
-                    c.A = 255;
-                }
-            }
-        }
+//                for(int i = firstPoly + numPolys; i < polygons.Count; i++)
+//                {
+//                    PlaneClassification planeClass = polygons[i].ClassifyAgainstPlane(polygons[firstPoly].surface.plane);
+
+//                    if (planeClass == PlaneClassification.OnPlane)
+//                    {
+//                        Extensions.Swap(polygons, firstPoly + numPolys, i);
+//                        numPolys++;
+//                    }
+//                }
+
+//                for(int i = firstPoly; i < firstPoly + numPolys; i++)
+//                {
+//                    for(int j = firstPoly; j < firstPoly + numPolys; j++)
+//                    {
+//                        Polygon p1 = polygons[i];
+//                        Polygon p2 = polygons[j];
+
+//                        //if (p1.surface != p2.surface)
+//                        //    continue;
+
+//                        Polygon newPoly = null;
+//                    }
+//                }
+//            }
+//#endif
+
+
+//            // DONE SPLITTING
+//            Console.WriteLine("ending polys: " + polygons.Count);
+
+//            // create graphics
+//            foreach (Polygon poly in polygons)
+//            {
+//                Color c = RandomColor();
+//                for (int j = 2; j < poly.vertices.Count; j++)
+//                {
+//                    AddVert(poly.vertices[0], c);
+//                    AddVert(poly.vertices[j - 1], c);
+//                    AddVert(poly.vertices[j], c);
+
+//                    // fade color to reveal triangles and winding order
+//                    c *= 0.9f;
+//                    c.A = 255;
+//                }
+//            }
+//        }
 
         
 
@@ -334,6 +347,9 @@ namespace KSoft.Game
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            pixel = new Texture2D(GraphicsDevice, 1, 1);
+            pixel.SetData(new Color[] { Color.White });
 
             // TODO: use this.Content to load your game content here
             //WavefrontFile model = new WavefrontFile("Content/bsptest.obj");
@@ -372,7 +388,31 @@ namespace KSoft.Game
                 //new VertexPositionColor(new Vector3(0, 0, -lineSize), Color.DarkBlue),
             };
 
-            //font = Content.Load<SpriteFont>("font");
+            //font = Content.Load<SpriteFont>("fonts/debug");
+
+            //// 94 chars
+            //RenderTarget2D fontrt = new RenderTarget2D(GraphicsDevice, 752+16, 8);
+
+            //GraphicsDevice.SetRenderTarget(fontrt);
+            //GraphicsDevice.Clear(Color.Transparent);
+
+            //spriteBatch.Begin();
+
+            //for(int i = 32; i <= 128; i++)
+            //{
+            //    int x = (i-32) * 8;
+            //    spriteBatch.DrawString(font, ((char)i).ToString(), new Vector2(x, 0), Color.White);
+            //}
+
+            //spriteBatch.End();
+
+            //GraphicsDevice.SetRenderTarget(null);
+
+            //Stream s = File.Open("font.png", FileMode.Create);
+            //fontrt.SaveAsPng(s, 752+16, 8);
+            //s.Close();
+
+            fontRenderer = new DebugFontRenderer(spriteBatch, Content.Load<Texture2D>("images/font"));
 
             // favorite maps: dm3 and e3m5
             LoadMap("qmaps/e1m1.map");
@@ -500,7 +540,7 @@ namespace KSoft.Game
             {
                 effect.VertexColorEnabled = true;
                 foreach(MapModel model in mapModels)
-                    model.Draw(effect.CurrentTechnique.Passes[0]);
+                    model.DrawPolygons(effect.CurrentTechnique.Passes[0]);
             }
 
             if (wireframeMode != WireframeMode.Off)
@@ -513,7 +553,7 @@ namespace KSoft.Game
 
                 effect.CurrentTechnique.Passes[0].Apply();
                 foreach (MapModel model in mapModels)
-                    model.Draw(effect.CurrentTechnique.Passes[0]);
+                    model.DrawLines(effect.CurrentTechnique.Passes[0]);
             }
 
             effect.VertexColorEnabled = true;
@@ -563,6 +603,11 @@ namespace KSoft.Game
             GraphicsDevice.Viewport = oldViewport;
         }
 
+        string SimpleVec3String(Vector3 v)
+        {
+            return "X" + v.X.ToString("0.00") + " Y" + v.Y.ToString("0.00") + " Z" + v.Z.ToString("0.00");
+        }
+
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
@@ -573,6 +618,23 @@ namespace KSoft.Game
 
             DrawMap(gameTime);
             DrawAxisGizmo(gameTime);
+
+            spriteBatch.Begin();
+
+            fontRenderer.Submit("CAM ORIGIN: " + SimpleVec3String(cameraOrigin), 0, 0, Color.White);
+            fontRenderer.Submit("CAM YAW: " + cameraYaw.ToString("0.00"), 0, 8, Color.White);
+            fontRenderer.Submit("CAM PITCH: " + cameraPitch.ToString("0.00"), 0, 16, Color.White);
+
+            //string boundingText = "wow oh my god text so cool *yawn*\noh cool a newline";
+
+            //int textWidth = 0;
+            //int textHeight = 0;
+            //fontRenderer.GetSize(boundingText, out textWidth, out textHeight);
+
+            //spriteBatch.Draw(pixel, new Rectangle(16, 24, textWidth, textHeight), Color.DarkGreen);
+            //fontRenderer.Submit(boundingText, 16, 24, Color.White);
+
+            spriteBatch.End();
 
             // screenshot code
             if (screenshotQueued)

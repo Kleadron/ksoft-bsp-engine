@@ -19,33 +19,52 @@ namespace KSoft.Game.Map
         public readonly BoundingBox bb;
         public readonly Vector3 size;
 
-        VertexPositionColor[] renderverts;
-        int[] renderindices;
+        VertexPositionColor[] polyVerts;
+        int[] polyIndices;
+
+        VertexPositionColor[] lineVerts;
+        int[] lineIndices;
+
+        Color color;
 
         //BasicEffect effect;
         GraphicsDevice device;
 
         // Takes a list of polygons and automatically creates renderable geometry
-        public MapModel(GraphicsDevice device, List<Polygon> polygons)
+        public MapModel(GraphicsDevice device, List<Polygon> polygons, Color? color = null)
         {
             this.device = device;
             //effect = new BasicEffect(device);
             //effect.VertexColorEnabled = true;
 
+            if (color == null)
+                this.color = Game1.RandomColor();
+            else
+                this.color = color.GetValueOrDefault();
+
             List<VertexPositionColor> vlist = new List<VertexPositionColor>();
             List<int> ilist = new List<int>();
 
-            CreateRenderData(vlist, ilist, polygons);
+            CreateRenderData(vlist, ilist, polygons, false);
 
-            renderverts = vlist.ToArray();
-            renderindices = ilist.ToArray();
+            polyVerts = vlist.ToArray();
+            polyIndices = ilist.ToArray();
+
+            vlist.Clear();
+            ilist.Clear();
+
+            CreateRenderData(vlist, ilist, polygons, true);
+
+            lineVerts = vlist.ToArray();
+            lineIndices = ilist.ToArray();
+
 
             Vector3 min = Vector3.One * 4096;
             Vector3 max = Vector3.One * -4096;
 
-            for (int i = 0; i < renderverts.Length; i++)
+            for (int i = 0; i < polyVerts.Length; i++)
             {
-                Vector3 check = renderverts[i].Position;
+                Vector3 check = polyVerts[i].Position;
 
                 if (min.X > check.X)
                     min.X = check.X;
@@ -67,7 +86,7 @@ namespace KSoft.Game.Map
             size = max - min;
         }
 
-        void CreateRenderData(List<VertexPositionColor> verts, List<int> indices, List<Polygon> polygons)
+        void CreateRenderData(List<VertexPositionColor> verts, List<int> indices, List<Polygon> polygons, bool lines)
         {
             if (polygons.Count == 0)
                 return;
@@ -104,33 +123,77 @@ namespace KSoft.Game.Map
             Color c1 = Color.White;
 
             if (!randomColorPerSurface)
-                c1 = Game1.RandomColor();
+                c1 = color;
 
             foreach (Polygon poly in polygons)
             {
+                if (poly.surface.nodraw)
+                    continue;
+
                 if (randomColorPerSurface)
                     c1 = Game1.RandomColor();
 
                 Color c = c1;
-                for (int j = 2; j < poly.vertices.Count; j++)
-                {
-                    AddVert(poly.vertices[0], c);
-                    AddVert(poly.vertices[j - 1], c);
-                    AddVert(poly.vertices[j], c);
 
-                    // fade color to reveal triangles and winding order
-                    c *= 0.9f;
+                if (lines)
+                {
+                    const float fadeStrength = 0.95f;
+
+                    for (int j = 1; j < poly.vertices.Count; j++)
+                    {
+                        AddVert(poly.vertices[j-1], c);
+                        c *= fadeStrength;
+                        c.A = 255;
+                        AddVert(poly.vertices[j], c);
+                        c *= fadeStrength;
+                        c.A = 255;
+                    }
+
+                    AddVert(poly.vertices[poly.vertices.Count-1], c);
+                    c *= fadeStrength;
                     c.A = 255;
+                    AddVert(poly.vertices[0], c);
                 }
+                else
+                {
+                    for (int j = 2; j < poly.vertices.Count; j++)
+                    {
+                        const float fadeStrength = 0.95f;
+
+                        AddVert(poly.vertices[0], c);
+                        c *= fadeStrength;
+                        c.A = 255;
+                        AddVert(poly.vertices[j - 1], c);
+                        c *= fadeStrength;
+                        c.A = 255;
+                        AddVert(poly.vertices[j], c);
+                        c *= fadeStrength;
+                        c.A = 255;
+
+                        // fade color to reveal triangles and winding order
+                        //c *= 0.9f;
+                        //c.A = 255;
+                    }
+                }
+                
             }
         }
 
-        public void Draw(EffectPass pass)
+        public void DrawPolygons(EffectPass pass)
         {
-            if (renderverts.Length > 0 && renderindices.Length > 0)
+            if (polyVerts.Length > 0 && polyIndices.Length > 0)
             {
                 pass.Apply();
-                device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderverts, 0, renderverts.Length, renderindices, 0, renderindices.Length / 3);
+                device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, polyVerts, 0, polyVerts.Length, polyIndices, 0, polyIndices.Length / 3);
+            }
+        }
+
+        public void DrawLines(EffectPass pass)
+        {
+            if (lineVerts.Length > 0 && lineIndices.Length > 0)
+            {
+                pass.Apply();
+                device.DrawUserIndexedPrimitives(PrimitiveType.LineList, lineVerts, 0, lineVerts.Length, lineIndices, 0, lineIndices.Length / 2);
             }
         }
     }

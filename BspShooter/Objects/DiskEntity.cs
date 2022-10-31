@@ -17,10 +17,9 @@ namespace KSoft.Game.Objects
         {
             get
             {
-                if (keyvalues.ContainsKey("classname"))
-                    return keyvalues["classname"];
-                else
-                    return null;
+                string value = null;
+                keyvalues.TryGetValue("classname", out value);
+                return value;
             }
         }
 
@@ -28,14 +27,67 @@ namespace KSoft.Game.Objects
         {
             get
             {
+                string value = null;
                 int flags = 0;
 
-                if (keyvalues.ContainsKey("spawnflags"))
+                if (keyvalues.TryGetValue("spawnflags", out value))
                 {
-                    int.TryParse(keyvalues["spawnflags"], out flags);
+                    int.TryParse(value, out flags);
                 }
                 
                 return flags;
+            }
+        }
+
+        public Vector3 Origin
+        {
+            get
+            {
+                string value = null;
+                Vector3 v = Vector3.Zero;
+
+                if (keyvalues.TryGetValue("origin", out value))
+                {
+                    string[] split = value.Split(' ');
+
+                    if (split.Length == 3)
+                    {
+                        float.TryParse(split[0], out v.X);
+                        float.TryParse(split[1], out v.Y);
+                        float.TryParse(split[2], out v.Z);
+                    }
+                }
+
+                return v;
+            }
+        }
+
+        public Vector3 Angles
+        {
+            get
+            {
+                string value = null;
+                Vector3 v = Vector3.Zero;
+
+                // X Y Z euler angles
+                if (keyvalues.TryGetValue("angles", out value))
+                {
+                    string[] split = value.Split(' ');
+
+                    if (split.Length == 3)
+                    {
+                        float.TryParse(split[0], out v.X);
+                        float.TryParse(split[1], out v.Y);
+                        float.TryParse(split[2], out v.Z);
+                    }
+                }
+                // Z rotation angle
+                else if (keyvalues.TryGetValue("angle", out value))
+                {
+                    float.TryParse(value, out v.Z);
+                }
+
+                return v;
             }
         }
 

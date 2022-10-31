@@ -72,7 +72,7 @@ namespace KSoft.Game.Objects
                     }
                 }
 
-                // snap vertices to nice integer cordinates (mostly)
+                // snap vertices to nice cordinates (this may be a bad idea)
                 polygon.RoundVertices();
                 polygons.Add(polygon);
             }

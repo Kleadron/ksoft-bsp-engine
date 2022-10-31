@@ -110,6 +110,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Graphics\DebugFontRenderer.cs" />
     <Compile Include="Map\MapBuilder.cs" />
     <Compile Include="Map\MapModel.cs" />
     <Compile Include="Objects\DiskEntity.cs" />
@@ -135,8 +136,9 @@
       <Project>{CA8F7E32-5CB7-44AA-BF6E-67B11FBD054E}</Project>
       <Name>KleadronCommon</Name>
     </ProjectReference>
-    <ProjectReference Include="..\BspShooterContent\BspShooterContent.contentproj">
-      <Name>BspShooterContent</Name>
+    <ProjectReference Include="..\XnaContent\XnaContent.contentproj">
+      <Project>{50CB2516-6713-400F-B0D1-796C0E1A157F}</Project>
+      <Name>XnaContent</Name>
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>

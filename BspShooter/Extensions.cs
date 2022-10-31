@@ -9,7 +9,7 @@ namespace KSoft.Game
     public static class Extensions
     {
         public const float Epsilon = 0.0001f;
-        public const float MapVertexRound = 0.125f;
+        public const float MapVertexRound = 0.0625f;
 
         /// <summary>
         /// Gets the axis closest to the normal of this plane

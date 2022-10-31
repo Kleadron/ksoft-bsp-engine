@@ -1,28 +1,43 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C# Express 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1684
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BspShooter", "BspShooter\BspShooter.csproj", "{FF47E23E-E031-45B9-98C8-4296121A8D27}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KleadronCommon", "KleadronCommon\KleadronCommon.csproj", "{CA8F7E32-5CB7-44AA-BF6E-67B11FBD054E}"
 EndProject
+Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "XnaContent", "XnaContent\XnaContent.contentproj", "{50CB2516-6713-400F-B0D1-796C0E1A157F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
 		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FF47E23E-E031-45B9-98C8-4296121A8D27}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{FF47E23E-E031-45B9-98C8-4296121A8D27}.Debug|x86.ActiveCfg = Debug|x86
 		{FF47E23E-E031-45B9-98C8-4296121A8D27}.Debug|x86.Build.0 = Debug|x86
+		{FF47E23E-E031-45B9-98C8-4296121A8D27}.Release|Any CPU.ActiveCfg = Release|x86
 		{FF47E23E-E031-45B9-98C8-4296121A8D27}.Release|x86.ActiveCfg = Release|x86
 		{FF47E23E-E031-45B9-98C8-4296121A8D27}.Release|x86.Build.0 = Release|x86
-		{38CF700E-7FA3-4AE3-BB0D-B7D78B53E2D9}.Debug|x86.ActiveCfg = Debug|x86
-		{38CF700E-7FA3-4AE3-BB0D-B7D78B53E2D9}.Release|x86.ActiveCfg = Release|x86
+		{CA8F7E32-5CB7-44AA-BF6E-67B11FBD054E}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{CA8F7E32-5CB7-44AA-BF6E-67B11FBD054E}.Debug|x86.ActiveCfg = Debug|x86
 		{CA8F7E32-5CB7-44AA-BF6E-67B11FBD054E}.Debug|x86.Build.0 = Debug|x86
+		{CA8F7E32-5CB7-44AA-BF6E-67B11FBD054E}.Release|Any CPU.ActiveCfg = Release|x86
 		{CA8F7E32-5CB7-44AA-BF6E-67B11FBD054E}.Release|x86.ActiveCfg = Release|x86
 		{CA8F7E32-5CB7-44AA-BF6E-67B11FBD054E}.Release|x86.Build.0 = Release|x86
+		{50CB2516-6713-400F-B0D1-796C0E1A157F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50CB2516-6713-400F-B0D1-796C0E1A157F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{50CB2516-6713-400F-B0D1-796C0E1A157F}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{50CB2516-6713-400F-B0D1-796C0E1A157F}.Release|x86.ActiveCfg = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6E48D14B-522C-46A1-AD1D-BC2459C039B0}
 	EndGlobalSection
 EndGlobal
