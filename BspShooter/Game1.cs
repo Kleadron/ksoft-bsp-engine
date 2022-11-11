@@ -24,8 +24,8 @@ namespace KSoft.Game
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        GraphicsDeviceManager gdm;
+        SpriteBatch sb;
 
         //VertexPositionColor[] renderverts;
         //int[] renderindices;
@@ -42,7 +42,7 @@ namespace KSoft.Game
         RasterizerState wireframeState;
 
         //SpriteFont font;
-        DebugFontRenderer fontRenderer;
+        DebugFontRenderer fr;
         Texture2D pixel;
 
         static Random r = new Random();
@@ -92,12 +92,12 @@ namespace KSoft.Game
 
         public Game1()
         {
-            graphics = new GraphicsDeviceManager(this);
+            gdm = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            graphics.PreferredBackBufferWidth = 1280;
-            graphics.PreferredBackBufferHeight = 720;
-            graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
+            gdm.PreferredBackBufferWidth = 1280;
+            gdm.PreferredBackBufferHeight = 720;
+            gdm.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
 
             Console.WriteLine("Engine Created");
             IsMouseVisible = true;
@@ -346,7 +346,7 @@ namespace KSoft.Game
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            sb = new SpriteBatch(GraphicsDevice);
 
             pixel = new Texture2D(GraphicsDevice, 1, 1);
             pixel.SetData(new Color[] { Color.White });
@@ -412,7 +412,7 @@ namespace KSoft.Game
             //fontrt.SaveAsPng(s, 752+16, 8);
             //s.Close();
 
-            fontRenderer = new DebugFontRenderer(spriteBatch, Content.Load<Texture2D>("images/font"));
+            fr = new DebugFontRenderer(sb, Content.Load<Texture2D>("images/font"));
 
             // favorite maps: dm3 and e3m5
             LoadMap("qmaps/e1m1.map");
@@ -619,11 +619,11 @@ namespace KSoft.Game
             DrawMap(gameTime);
             DrawAxisGizmo(gameTime);
 
-            spriteBatch.Begin();
+            sb.Begin();
 
-            fontRenderer.Submit("CAM ORIGIN: " + SimpleVec3String(cameraOrigin), 0, 0, Color.White);
-            fontRenderer.Submit("CAM YAW: " + cameraYaw.ToString("0.00"), 0, 8, Color.White);
-            fontRenderer.Submit("CAM PITCH: " + cameraPitch.ToString("0.00"), 0, 16, Color.White);
+            fr.Submit("CAM ORIGIN: " + SimpleVec3String(cameraOrigin), 0, 0, Color.White);
+            fr.Submit("CAM YAW: " + cameraYaw.ToString("0.00"), 0, 8, Color.White);
+            fr.Submit("CAM PITCH: " + cameraPitch.ToString("0.00"), 0, 16, Color.White);
 
             //string boundingText = "wow oh my god text so cool *yawn*\noh cool a newline";
 
@@ -634,7 +634,7 @@ namespace KSoft.Game
             //spriteBatch.Draw(pixel, new Rectangle(16, 24, textWidth, textHeight), Color.DarkGreen);
             //fontRenderer.Submit(boundingText, 16, 24, Color.White);
 
-            spriteBatch.End();
+            sb.End();
 
             // screenshot code
             if (screenshotQueued)

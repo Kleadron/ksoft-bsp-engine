@@ -52,6 +52,14 @@ namespace KSoft.Game.Graphics
             height = highestHeight;
         }
 
+        public void GetCenter(string text, out int width, out int height)
+        {
+            GetSize(text, out width, out height);
+
+            width /= 2;
+            height /= 2;
+        }
+
         public void Submit(string text, int x, int y, Color color)
         {
             int destX = x;

@@ -111,6 +111,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Graphics\DebugFontRenderer.cs" />
+    <Compile Include="KMath.cs" />
     <Compile Include="Map\MapBuilder.cs" />
     <Compile Include="Map\MapModel.cs" />
     <Compile Include="Objects\DiskEntity.cs" />
